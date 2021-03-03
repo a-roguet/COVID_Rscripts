@@ -51,8 +51,8 @@ samples.info = "XXXXXXXXXXX.csv"
 
 ### Import the functions
 ```{r echo=FALSE, error=FALSE, message=FALSE}
-knitr::opts_knit$set(root.dir = here(working_directory, run_ID)
-source("function_ddPCR.R")
+knitr::opts_knit$set(root.dir = here(working_directory, run_ID))
+source(here(working_directory, run_ID, "function_ddPCR.R"))
 ```
 
 
