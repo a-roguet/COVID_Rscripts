@@ -51,7 +51,7 @@ Analyse_ddPCR_results <- function() {
   ##### Prepare the data ###### 
   
   ## Set the run directory
-  setwd(paste0(working_directory, run_ID, "/"))
+  setwd(here(working_directory, run_ID))
   
   ## Read sample info data
   samples<-data.table::fread(samples.info, fill=TRUE, select=c("Well", "Sample", "Target"))
