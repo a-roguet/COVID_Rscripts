@@ -16,6 +16,7 @@ library(ggplot2)
 library(data.table)
 library(dplyr)
 library(stringr)
+library(here)
 ```
 
 
@@ -25,7 +26,7 @@ OneDrive desktop has to be install on your computer. \
 Once install, you will have to synchronize the SARS-CoV-2 folder to your files, to do that, you just have to create a shortcut of the SARS-CoV-2 folder. On your favorite browser, just right click on SARS-CoV-2 folder and click on "Add shortcut".  \
 You are good to go :-)
 ```{r}
-working_directory="~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/"
+working_directory=here("~", "OneDrive - UWM", "SARS-CoV-2", "DATA", "ddPCR data")
 ```
 
 ### Set the run-ID
@@ -50,7 +51,7 @@ samples.info = "XXXXXXXXXXX.csv"
 
 ### Import the functions
 ```{r echo=FALSE, error=FALSE, message=FALSE}
-knitr::opts_knit$set(root.dir = paste0(working_directory, run_ID, "/"))
+knitr::opts_knit$set(root.dir = here(working_directory, run_ID)
 source("function_ddPCR.R")
 ```
 
