@@ -16,6 +16,13 @@ Analyse_ddPCR_results <- function() {
   library(dplyr, quietly=TRUE)
   library(stringr, quietly=TRUE)
   
+  
+  ## Set the run directory
+  setwd(here(working_directory, run_ID))
+  
+  
+  
+  
   ################################
   ### Artificial sample
   ################################
@@ -28,7 +35,7 @@ Analyse_ddPCR_results <- function() {
   # four.clusters<-articificial.sample.plate[["A01"]]
   # dropletPlot(four.clusters)
   # saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
-  four.clusters.genuine<-readRDS("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
+  four.clusters.genuine<-readRDS("four_clusters_iowa.RData")
   
   ## Get the center of the negative droplets
   four.clusters.genuine.NN <- four.clusters.genuine@dropletAmplitudes[which(four.clusters.genuine@classification$Cluster == "NN"),]
@@ -45,13 +52,7 @@ Analyse_ddPCR_results <- function() {
   
   ################################
   ### Standards & Real samples
-  ################################
-  
-  
-  ##### Prepare the data ###### 
-  
-  ## Set the run directory
-  setwd(here(working_directory, run_ID))
+  ################################  
   
   ## Read sample info data
   samples<-data.table::fread(samples.info, fill=TRUE, select=c("Well", "Sample", "Target"))
