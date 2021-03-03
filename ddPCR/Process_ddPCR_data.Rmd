@@ -1,7 +1,7 @@
 ---
 title: "Process ddPCR data"
 author: "Adelaide Roguet"
-date: "3/2/2021"
+date: "`r format(Sys.time(), '%a %d %b %Y')`"
 output: html_document
 ---
 
@@ -16,7 +16,6 @@ library(ggplot2)
 library(data.table)
 library(dplyr)
 library(stringr)
-library(ezknitr)
 ```
 
 
@@ -34,24 +33,25 @@ The run-ID is the name of the directory containing the amplification/cluster .cs
 It is important that folder start with: 
 YEAR-MONTH-DAY space TARGET, such as 2021-1-24 for a N1N2 run performed on January 24, 2021
 ```{r}
-run_ID = "2-25 PMMOV copy"
+run_ID = "XXXXXXXXXXX"
 ```
 
 ### Set the sample info
 .csv name (in the folder)
 ```{r}
-samples.info = "2-25 PMMoV.csv" 
+samples.info = "XXXXXXXXXXX.csv" 
 ```
 
 
+\
+\
 
 # Process the ddPCR data 
 
 ### Import the functions
 ```{r echo=FALSE, error=FALSE, message=FALSE}
 knitr::opts_knit$set(root.dir = paste0(working_directory, run_ID, "/"))
-file.copy("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/function_ddPCR_v4.R", ".", overwrite = TRUE)
-source("function_ddPCR_v4.R")
+source("function_ddPCR.R")
 ```
 
 
@@ -59,6 +59,31 @@ source("function_ddPCR_v4.R")
 ```{r dplyr, stringr, data.table}
 Analyse_ddPCR_results()
 ```
+
+
+
+
+
+
+\
+\
+\
+\
+\
+
+
+_________________
+Troubleshooting
+
++ **cannot change working directory** \
+The Run_ID is incorrect
+
++ **Error in paste0(working_directory, runID, "/") :** \
+**Object working directory not found** \
+Means that the working directory was not enter and still blank!
+  
++ **If cannot detect the multiplex** \
+Check in the .csv file that the Target are well described. WARNING BCoV and BCov are different for a computer. 
 
 
 
