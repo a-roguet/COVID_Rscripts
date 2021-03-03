@@ -35,7 +35,7 @@ Analyse_ddPCR_results <- function() {
   # four.clusters<-articificial.sample.plate[["A01"]]
   # dropletPlot(four.clusters)
   # saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
-  four.clusters.genuine<-readRDS("four_clusters_iowa.RData")
+  four.clusters.genuine<-readRDS(here(working_directory, run_ID,"four_clusters_iowa.RData"))
   
   ## Get the center of the negative droplets
   four.clusters.genuine.NN <- four.clusters.genuine@dropletAmplitudes[which(four.clusters.genuine@classification$Cluster == "NN"),]
