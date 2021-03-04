@@ -215,7 +215,7 @@ Analyse_ddPCR_results <- function() {
     results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
     names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
     results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, "okay")
-    results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=12000,"low number of droplets", "okay")
+    results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.multiplex.export$Run<-run_ID
     results.multiplex.export$Comment<-""
     #print(paste0("Number of row before sample name transformation: ", nrow(results.multiplex.export)))
@@ -309,7 +309,7 @@ if(BCoVBRSVmultiplex>0){
   results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
   names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
   results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, "okay")
-  results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=12000,"low number of droplets", "okay")
+  results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
   results.multiplex.export$Run<-run_ID
   results.multiplex.export$Comment<-""
   #print(paste0("Number of row before sample name transformation: ", nrow(results.multiplex.export)))
@@ -375,7 +375,7 @@ if(BCoVBRSVmultiplex>0){
     names(results.FAMsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.FAMsingleplex.export$Target<-singleplex_FAMassay
     results.FAMsingleplex.export$Flag.positive.droplets<-ifelse(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets>0.7,results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets, "okay")
-    results.FAMsingleplex.export$Flag.total.droplets<-ifelse(results.FAMsingleplex.export$AcceptedDroplets<=12000,"low number of droplets", "okay")
+    results.FAMsingleplex.export$Flag.total.droplets<-ifelse(results.FAMsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.FAMsingleplex.export$Well<-row.names(results.FAMsingleplex.export)
     results.FAMsingleplex.export$Run<-run_ID
     results.FAMsingleplex.export$DyeName<-"FAM"
@@ -444,7 +444,7 @@ if(BCoVBRSVmultiplex>0){
     names(results.HEXsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.HEXsingleplex.export$Target<-singleplex_HEXassay
     results.HEXsingleplex.export$Flag.positive.droplets<-ifelse(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets>0.7,results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets, "okay")
-    results.HEXsingleplex.export$Flag.total.droplets<-ifelse(results.HEXsingleplex.export$AcceptedDroplets<=12000,"low number of droplets", "okay")
+    results.HEXsingleplex.export$Flag.total.droplets<-ifelse(results.HEXsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.HEXsingleplex.export$Well<-row.names(results.HEXsingleplex.export)
     results.HEXsingleplex.export$Run<-run_ID
     results.HEXsingleplex.export$DyeName<-"HEX"
