@@ -62,29 +62,3 @@ Analyse_ddPCR_results()
 ```
 
 
-
-
-
-
-\
-\
-\
-\
-\
-
-
-_________________
-Troubleshooting
-
-+ **cannot change working directory** \
-The Run_ID is incorrect
-
-+ **Error in paste0(working_directory, runID, "/") :** \
-**Object working directory not found** \
-Means that the working directory was not enter and still blank!
-  
-+ **If cannot detect the multiplex** \
-Check in the .csv file that the Target are well described. WARNING BCoV and BCov are different for a computer. 
-
-
-
