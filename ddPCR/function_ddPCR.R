@@ -187,12 +187,10 @@ Analyse_ddPCR_results <- function() {
       well.plot$kmeansSdRain<-gsub(5, "rain", well.plot$kmeansSdRain)
       
       pdf(paste0("multiplex_N1N2_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
-      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(kmeansSdRain))) + 
-              geom_point())
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(kmeansSdRain)))+ xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point() + scale_color_manual(values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
       dev.off()
       pdf(paste0("multiplex_N1N2_", well_ID, "_", well_sample_plot, "_1D_ch2.pdf"), width=8, height=8)
-      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(kmeansSdRain))) + 
-              geom_point())
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(kmeansSdRain))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point() + scale_color_manual(values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
       dev.off()
     }
     
@@ -283,10 +281,10 @@ if(BCoVBRSVmultiplex>0){
     well.plot$kmeansSdRain<-gsub(4, "FAM-HEX", well.plot$Cluster)
 
     pdf(paste0("multiplex_BCOVBRSV_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
-    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
+    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point() + scale_color_manual(values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
     dev.off()
     pdf(paste0("multiplex_BCOVBRSV_", well_ID, "_", well_sample_plot, "_1D_ch2.pdf"), width=8, height=8)
-    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
+    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point() + scale_color_manual(values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
     dev.off()
   }
   
