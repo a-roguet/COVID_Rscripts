@@ -283,12 +283,10 @@ if(BCoVBRSVmultiplex>0){
     well.plot$kmeansSdRain<-gsub(4, "FAM-HEX", well.plot$Cluster)
 
     pdf(paste0("multiplex_BCOVBRSV_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
-    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + 
-            geom_point())
+    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
     dev.off()
     pdf(paste0("multiplex_BCOVBRSV_", well_ID, "_", well_sample_plot, "_1D_ch2.pdf"), width=8, height=8)
-    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + 
-            geom_point())
+    print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
     dev.off()
   }
   
@@ -363,8 +361,7 @@ if(BCoVBRSVmultiplex>0){
       well.plot$Cluster<-gsub(1, "negative", well.plot$Cluster)
       well.plot$Cluster<-gsub(3, "positive", well.plot$Cluster)
       pdf(paste0("singleplex_", target, "_", well_ID, "_", well_sample_plot, ".pdf"), width=8, height=8)
-      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + 
-              geom_point())
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
       dev.off()
     }
     
@@ -430,8 +427,7 @@ if(BCoVBRSVmultiplex>0){
       well.plot$Cluster<-gsub(1, "negative", well.plot$Cluster)
       well.plot$Cluster<-gsub(2, "positive", well.plot$Cluster)
       pdf(paste0("singleplex_", target, "_", well_ID, "_", well_sample_plot, ".pdf"), width=8, height=8)
-      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + 
-              geom_point())
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point())
       dev.off()
     }
     
