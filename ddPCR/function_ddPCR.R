@@ -275,11 +275,11 @@ if(BCoVBRSVmultiplex>0){
     
     well.plot<-as.data.frame(cbind(well@dropletAmplitudes$Ch1.Amplitude, well@dropletAmplitudes$Ch2.Amplitude, well@classification$Cluster))
     names(well.plot)<-c("Ch1.Amplitude", "Ch2.Amplitude", "Cluster")
-    well.plot$kmeansSdRain<-gsub(1, "negative", well.plot$Cluster)
-    well.plot$kmeansSdRain<-gsub(2, "HEX", well.plot$Cluster)
-    well.plot$kmeansSdRain<-gsub(3, "FAM", well.plot$Cluster)
-    well.plot$kmeansSdRain<-gsub(4, "FAM-HEX", well.plot$Cluster)
-
+    well.plot$Cluster<-gsub(1, "negative", well.plot$Cluster)
+    well.plot$Cluster<-gsub(2, "HEX", well.plot$Cluster)
+    well.plot$Cluster<-gsub(3, "FAM", well.plot$Cluster)
+    well.plot$Cluster<-gsub(4, "FAM-HEX", well.plot$Cluster)
+    
     pdf(paste0("multiplex_BCOVBRSV_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
     print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(Cluster))) + xlab("droplets (0-total accepted droplets)") + scale_color_discrete(name = "Droplet clusters:") + geom_point() + scale_color_manual(values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
     dev.off()
