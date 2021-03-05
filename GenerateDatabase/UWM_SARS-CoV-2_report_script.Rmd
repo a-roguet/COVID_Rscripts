@@ -603,7 +603,7 @@ paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/u
 ```
 
 
-# Checking part
+# Checking section
 
 ### Check tables
 ```{r}
