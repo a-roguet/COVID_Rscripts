@@ -1,0 +1,137 @@
+---
+title: "Only export new data - CDC/DHS report"
+author: "Adelaide Roguet"
+date: "`r format(Sys.time(), '%a %d %b %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(root.dir ="/Users/adelaideroguet/Desktop/", echo = TRUE)
+```
+
+Clear out your workspace
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+rm(list=ls(all=FALSE))
+ls()
+```
+
+
+
+Load packages and function
+```{r echo=TRUE, warning=FALSE, message=FALSE}
+library(dplyr)
+```
+
+***
+## Import data 
+
+Indicate the name of the last report uploaded on the DHS/CDC server
+```{r}
+name.last.CDCDHS.report<-"XXXXXX/XXXXXX"
+last.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.last.CDCDHS.report, ".txt"), h=T, sep = "|")
+```
+
+Indicate the name of the freshly generated report and the number of the new report
+```{r}
+name.fresh.report<-"XXXXXX/XXXXXX"
+number.new.report<-XXXXXX
+new.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, ".txt"), h=T, sep = "|")
+```
+
+
+Exclude samples in old/fresh database with missing N1/N2 or flow values
+```{r}
+last.report.noNAs<-last.report[!is.na(last.report$N1SARSCoV2Conc) & !is.na(last.report$AverageFlowRate),]
+new.report.noNAs<-new.report[!is.na(new.report$N1SARSCoV2Conc) & !is.na(new.report$AverageFlowRate),]
+print(paste0(nrow(new.report)-nrow(new.report.noNAs), " samples removed because of N1/N2 and/or Flow NAs removal"))
+for.display.N1N2<-new.report[is.na(new.report$N1SARSCoV2Conc),]; print(paste0(nrow(for.display.N1N2), " samples containing NAs in N1/N2 ")); print(paste0("CV:", for.display.N1N2$SampleID))
+for.display.Flow<-new.report[is.na(new.report$AverageFlowRate),]; print(paste0(nrow(for.display.Flow), " samples containing NAs in Flow ")); print(paste0("CV:", for.display.Flow$SampleID))
+```
+
+
+
+
+
+
+### Identify which lines contain new samples
+```{r}
+all.CV<-c(last.report.noNAs$SampleID,new.report.noNAs$SampleID)
+new.CV<-setdiff(unique(all.CV),all.CV[duplicated(all.CV)])
+```
+
+### Extract "old" and "new" data from "new.report"
+```{r}
+if(length(new.CV)==0){
+  new.report.only.old.data<-new.report.noNAs
+  } else{
+    only.new.data<-which(new.report.noNAs$SampleID %in% new.CV)
+    new.report.only.old.data<-new.report.noNAs[-only.new.data,]
+    new.report.only.new.data<-new.report.noNAs[only.new.data,]
+}
+```
+
+## Identify which lines contain modified data
+
+### Prepare the databases
+
+Truncate all numeric variables
+```{r}
+new.report.only.old.data.trunc <-new.report.only.old.data %>% mutate_if(is.numeric, trunc, digits=2)
+last.report.trunc <-last.report.noNAs %>% mutate_if(is.numeric, trunc, digits=2)
+```
+
+Convert all factors in characters
+```{r}
+i <- sapply(new.report.only.old.data.trunc, is.factor)
+new.report.only.old.data.trunc[i] <- lapply(new.report.only.old.data.trunc[i], as.character)
+
+j <- sapply(last.report.trunc, is.factor)
+last.report.trunc[j] <- lapply(last.report.trunc[j], as.character)
+```
+
+Convert NAs into "-"
+```{r}
+new.report.only.old.data.trunc[is.na(new.report.only.old.data.trunc)]<-"-"
+last.report.trunc[is.na(last.report.trunc)]<-"-"
+```
+
+### Identify cells that are different between old and new reports
+```{r}
+comparison <- data.frame(1 * (last.report.trunc != new.report.only.old.data.trunc))
+modified.CV<-which(rowSums(comparison) > 0)
+new.report.only.changes<-new.report.only.old.data[modified.CV, ]
+```
+
+
+
+## Export data
+
+Merge only new samples and modified samples
+```{r}
+if(length(new.CV)==0 & length(modified.CV)!=0){
+  print(paste0(length(modified.CV), " samples found with updated data"))
+  new.report.final<-new.report.only.changes
+  } else if(length(new.CV)!=0 & length(modified.CV)==0){
+    print(paste0(length(new.CV), " new samples"))
+    new.report.final<-new.report.only.new.data
+    } else if(length(new.CV)!=0 & length(modified.CV)!=0){
+      print(paste0(length(modified.CV), " samples found with updated data"))
+      print(paste0(length(new.CV), " new samples"))
+      new.report.final<-rbind(new.report.only.new.data, new.report.only.changes)
+    }
+```
+
+Prepare comparison export
+```{r}
+comparison.cv<-cbind(last.report.trunc$SampleID, comparison)
+modified.CV.col<-which(colSums(comparison) > 0)
+comparison.cv.changes<-comparison.cv[modified.CV, c(1, modified.CV.col+1)]
+names(comparison.cv.changes)[1]<-"CV"
+```
+
+Export data
+```{r}
+write.table(new.report.final, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, "_", number.new.report, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
+
+write.table(comparison.cv.changes, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, "_details_changes.txt"), row.names = FALSE, quote = FALSE, sep = "\t", na = "", col.names = TRUE)
+```
