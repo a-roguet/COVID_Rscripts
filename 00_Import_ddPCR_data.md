@@ -31,8 +31,7 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
    **Figure 1**  
    
    
-   ![Image of Yaktocat](img src="https://drive.google.com/file/d/1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg/preview")
-   
+![image](https://drive.google.com/uc?export=view&id=1913oZeBZPBNiUuk8gu3ZSbLBA2l_VQtG)   
    
    
    
