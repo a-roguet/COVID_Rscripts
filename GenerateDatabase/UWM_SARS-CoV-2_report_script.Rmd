@@ -1,0 +1,917 @@
+---
+title: "Import COVID - CDC/DHS report"
+author: "Adelaide Roguet"
+date: "`r format(Sys.time(), '%a %d %b %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+```
+
+
+Clear out your workspace
+```{r warning=FALSE, message=FALSE, results='hide'}
+rm(list=ls(all=FALSE))
+ls()
+set.seed(123)
+```
+
+
+Load packages and function
+```{r echo=TRUE, warning=TRUE, message=FALSE}
+library(openxlsx)
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(reshape2)
+library(knitr)
+library(openxlsx)
+library(R.utils)
+library(pander)
+
+is.nan.data.frame <- function(x)
+  do.call(cbind, lapply(x, is.nan))
+current_time<-format(Sys.time(), '%y-%m-%d_%H%M')
+```
+
+***
+# Import data 
+My OneDrive is synchronized on my local machine in the directory `~/OneDrive - UWM/'. It must not be the case for your computer. You will thus have to change slightly the path to access the files. 
+
+### ddPCR and qPCR data
+ddPCR and qPCR data are stored in the tab "Raw data ddPCR" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+```{r }
+data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Raw data", colNames = TRUE, startRow = 4)
+```
+
+ddPCR and qPCR data are stored in the tab "Raw data qPCR" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+```{r }
+data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
+```
+
+
+### metadata
+Sample info are stored in the tab "Sample extraction" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+```{r }
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+```
+
+Physico-chemical parameters are stored in the directory "WWTPs_parameters" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/WWTPs_parameters/.
+```{r }
+# Compile all metadata parameters
+metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/*.R");metadata_function
+source(metadata_function)
+compile_WWTPs_parameters()
+metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled.xlsx", sheet = "data", colNames = TRUE)
+```
+
+Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
+```{r }
+WWTP.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", sheet = "WWTP", colNames = TRUE)
+```
+
+Information about methods is stored in the tab "method" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
+```{r }
+method.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", sheet = "method", colNames = TRUE)
+```
+
+
+```{r echo=FALSE, message=FALSE, results='hide'}
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/"))
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/"))
+
+rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="UWM_SARS-CoV-2_report_script*")
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", rmd), overwrite = TRUE, copy.mode = TRUE)
+
+rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="Samples_selection_*")
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", rmd.sample.selection), overwrite = TRUE, copy.mode = TRUE)
+
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/Experiment data summary in categories - Editable.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTP_Methods_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+```
+
+
+***
+
+# Format data
+
+
+### ddPCR data
+
+1. Attribute LOD and LOQ for each run \
+Here, we will consider that all data are N1 or N2 assays...\
+\
+We changed the quencher on the N2-HEX probe at the end of November 2020, which allowed to better distinguish the negative to the HEX-droplets. This change lead to a smaller LOD. \
+  + Determine the date the assays were ran
+```{r}
+#date.assays.year<-as.data.frame(setDT(data.ddPCR)[, tstrsplit(Run, '[-]', type.convert=TRUE)])[,1]
+#date.assays.year<-ifelse(date.assays.year>=8, "-2020", "-2021")
+date.assays<-as.data.frame(setDT(data.ddPCR)[, tstrsplit(Run, '[ ]', type.convert=TRUE)])[,1]
+#date.assays<-paste0(date.assays, date.assays.year)
+date.assays<-as.Date(date.assays,format="%Y-%m-%d")
+data.ddPCR$run.date<-format(as.Date(date.assays), "%m/%d/%Y")
+```
+
+  + Split the runs before and after after 11-20-2020
+```{r}
+data.ddPCR$LOD.LOQ.info<-ifelse(as.Date(data.ddPCR$run.date, format="%m/%d/%Y") < as.Date(as.character("11/20/2020"), format="%m/%d/%Y"), "before_11-20-2020", "after_11-20-2020")
+```
+
+Attribute for each run the appropriate LOD and LOQ (based on the date of the run)
+Before 11-20-2020: \
+N1: LOD = 3 droplets (~ 0.220940357 cp/ul Rx) \
+N1: LOQ = 10 droplets (~ 0.746467383 cp/ul Rx) \
+N2: LOD = 5 droplets (~ 0.371816733 cp/ul Rx) \
+N2: LOQ = 9 droplets (~ 0.701746021 cp/ul Rx) \
+ \
+After 11-20-2020: \
+N1: LOD = 3 droplets (~ 0.220940357 cp/ul Rx) \
+N1: LOQ = 10 droplets (~ 0.746467383 cp/ul Rx) \
+N2: LOD = 3 droplets (~ 0.220940357 cp/ul Rx) \
+N2: LOQ = 10 droplets (~ 0.746467383 cp/ul Rx) \
+```{r}
+data.ddPCR$N1.LOD.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-20-2020", 3, 3)
+data.ddPCR$N2.LOD.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-20-2020", 5, 3)
+data.ddPCR$N1.LOQ.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-20-2020", 10, 10)
+data.ddPCR$N2.LOQ.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-20-2020", 9, 10)
+```
+
+
+
+
+2. Merge ddPCR and sample info data 
+```{r}
+data.ddPCR.sinfo<-setDT(sample.info)[data.ddPCR, on="Sample_ID"]
+```
+
+
+
+3. Select samples \
+Select "real-time" samples collected in the 12 WWTPs monitored and processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI were discarded.
+```{r}
+ddPCR.sinfo.realtime<-subset(data.ddPCR.sinfo, Sample_Type=="Real-time" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
+ddPCR.sinfo.realtime<-subset(ddPCR.sinfo.realtime, City=="Brookfield"| City=="Burlington"| City=="Cedarburg"| City=="Green Bay_DP"| City=="Green Bay_PLT"| City=="Milwaukee_JI"| City=="Milwaukee_SS"| City=="Port Washington"| City=="Racine"| City=="South Milwaukee"| City=="Village of Grafton"| City=="Waukesha")
+ddPCR<-ddPCR.sinfo.realtime
+```
+
+
+4. Calculate new fields:
+
+  + ddPCR or RT-ddPCR reaction volume (uL)
+```{r}
+rx.volume<-as.numeric(as.character(ddPCR$`RT-ddPCR_Rx_Volume`))
+```
+
+  + GC per reaction (ddPCR or RT-ddPCR): reaction volume (uL) * concentration per uL of reaction
+```{r echo = T, warning = FALSE}
+ddPCR.GC.per.uL.rx<-ifelse(ddPCR$`Conc(copies/µL)`=="No Call",0,as.numeric(as.character(ddPCR$`Conc(copies/µL)`)))
+GC.per.rx<-rx.volume*ddPCR.GC.per.uL.rx
+```                
+
+  + Effective volume per rx (taking into account the dilution factor (DF, i.e. 1 for 1:1, 10 for 1:10))
+```{r echo = T, message = FALSE, error = FALSE}
+effective.volume.DF<-as.numeric(as.character(ddPCR$`1-Step_Effective_Volume`))/as.numeric(as.character(ddPCR$Dilution))
+```
+                    
+  + GC per L of sewage : GC per assay (GC/uL) / Effective volume (uL) * 1000000
+```{r}
+ddPCR.GC.per.L<-GC.per.rx/effective.volume.DF*1000000
+```   
+
+  + Expected BCoV concentration per L of sewage (GC/L sewage): (volume spiked (uL) * concentration in BCoV solution (GC/uL) ) / Sample volume processed (mL) * 1000
+```{r}
+BCoV.exp.GC.per.L.sewage<-(as.numeric(as.character(ddPCR$Volume_BCoV_Spiked))*as.numeric(as.character(ddPCR$BCoV_Titer_Concentration)))/as.numeric(as.character(ddPCR$Processed_Volume))*1000
+BCoV.exp.log10.per.mL.sewage<-log10(BCoV.exp.GC.per.L.sewage/1000)
+```
+
+  + Observed BCoV concentration per L of sewage (GC/L sewage)
+```{r}
+BCoV.obs.GC.per.L.sewage<-ifelse(ddPCR$Target=="BCoV", ddPCR.GC.per.L, NA)
+```
+
+  + BCoV recovery (%): Observed/Expected BCoV concentration per L of sewage * 100 
+```{r}
+BCoV.recovery<-BCoV.obs.GC.per.L.sewage/BCoV.exp.GC.per.L.sewage*100
+```
+
+
+  + Define LOQ and LOD (concentration thresholds)
+```{r}
+ddPCR$N1.LOD.threshold<-round((-log((as.numeric(as.character(ddPCR$Accepted.Droplets)) - as.numeric(as.character(ddPCR$N1.LOD.droplet.threshold))) / as.numeric(as.character(ddPCR$Accepted.Droplets)))) / (0.00085), digits = 3)
+ddPCR$N1.LOQ.threshold<-round((-log((as.numeric(as.character(ddPCR$Accepted.Droplets)) - as.numeric(as.character(ddPCR$N1.LOQ.droplet.threshold))) / as.numeric(as.character(ddPCR$Accepted.Droplets)))) / (0.00085), digits = 3)
+ddPCR$N2.LOD.threshold<-round((-log((as.numeric(as.character(ddPCR$Accepted.Droplets)) - as.numeric(as.character(ddPCR$N2.LOD.droplet.threshold))) / as.numeric(as.character(ddPCR$Accepted.Droplets)))) / (0.00085), digits = 3)
+ddPCR$N2.LOQ.threshold<-round((-log((as.numeric(as.character(ddPCR$Accepted.Droplets)) - as.numeric(as.character(ddPCR$N2.LOQ.droplet.threshold))) / as.numeric(as.character(ddPCR$Accepted.Droplets)))) / (0.00085), digits = 3)
+```
+  
+
+  + N1 Limit of detection (N1 LOD, GC/L) : Volume Rx (uL) * minimum concentration detectable (N1.LOD.threshold) / Effective volume (taking into account the dilution factor) (uL)
+```{r}
+N1.LOD<-1000000*(rx.volume*ddPCR$N1.LOD.threshold)/effective.volume.DF
+```   
+
+  + N1 Limit of quantification (N1 LOQ, GC/L) : Volume Rx (uL) * minimum concentration quantifiable (N1.LOQ.threshold) / Effective volume (taking into account the dilution factor) (uL)
+```{r}
+N1.LOQ<-1000000*(rx.volume*ddPCR$N1.LOQ.threshold)/effective.volume.DF
+```  
+
+  + N2 Limit of detection (N2 LOD, GC/L) : Volume Rx (uL) * minimum concentration detectable (N2.LOD.threshold) / Effective volume (taking into account the dilution factor) (uL)
+```{r}
+N2.LOD<-1000000*(rx.volume*ddPCR$N2.LOD.threshold)/effective.volume.DF
+```   
+
+  + N2 Limit of quantification (N2 LOQ, GC/L) : Volume Rx (uL) * minimum concentration quantifiable (N2.LOQ.threshold) / Effective volume (taking into account the dilution factor) (uL)
+```{r}
+N2.LOQ<-1000000*(rx.volume*ddPCR$N2.LOQ.threshold)/effective.volume.DF
+```  
+
+
+  + Extract NTC-N1/N2 information for each run \
+Extract and prepare data
+```{r}
+NTC<-data.ddPCR[, c("Run", "Target", "Sample_ID", "Positives", "N1.LOD.droplet.threshold", "N2.LOD.droplet.threshold")]
+NTC<-subset(NTC, Sample_ID=="NTC")
+NTC<-subset(NTC, Target=="N1" | Target=="N2")
+NTC$Positive.droplets.threshold<-ifelse(NTC$Target=="N1", NTC$N1.LOD.droplet.threshold, NTC$N2.LOD.droplet.threshold)
+NTC<-NTC[, c("Run", "Target", "Positives","Positive.droplets.threshold")]
+```  
+Determine if N1/N2 NTC were amplified or not for each run \
+*A NTC is "not amplified" if the number of positive droplets is below the limit of quantification (= 3 droplets)*  
+```{r}
+NTC$Amplified<-ifelse(NTC$Positives>=NTC$Positive.droplets.threshold,1,0)
+```
+Split table bewtween N1 and N2 \
+*Because 2 assays are run per NTC-well, 1 well is considered as 2 NTCs*   
+```{r}
+NTC.N1.summary<- subset(NTC, Target == "N1") %>%
+  group_by(as.factor(Run)) %>%
+  summarize(NTC_amplified_count = sum(Amplified),
+            NTC_count = n(), 
+            .groups = 'drop')
+names(NTC.N1.summary)[1]<-"Run"
+
+NTC.N2.summary<-as.data.frame(subset(NTC, Target == "N2")) %>%
+  group_by(as.factor(Run)) %>%
+  summarize(NTC_amplified_count = sum(Amplified),
+            NTC_count = n(), 
+            .groups = 'drop')
+names(NTC.N2.summary)[1]<-"Run"
+```
+
+  + Determine if N1 and N2 assay above/below level of detection \
+```{r}
+N1N2.droplets<-ifelse(ddPCR$Target=="N1" | ddPCR$Target=="N2", ddPCR$Positives, NA)
+N1N2.droplets.LOD<-ifelse(N1N2.droplets < ddPCR$N1.LOD.droplet.threshold & ddPCR$Target=="N1", 1, 0)
+N1N2.droplets.LOD<-ifelse(N1N2.droplets < ddPCR$N2.LOD.droplet.threshold & ddPCR$Target=="N2", 1, N1N2.droplets.LOD)
+```
+
+  + Determine lower/upper interval confidence of ddPCR concentrations
+```{r}
+lower.upper<-matrix(NA, nrow(ddPCR), 2)
+for (i in 1:nrow(ddPCR)){
+  poisson.test.result<-0
+  poisson.test.result<-poisson.test(as.numeric(as.character(ddPCR[i, c("Positives")])), conf.level = 0.95, alternative = c("two.sided"))
+  lower.upper[i,1]<-ifelse(ddPCR[i, c("Positives")]==0, NA, poisson.test.result$conf.int[1])
+  lower.upper[i,2]<-ifelse(ddPCR[i, c("Positives")]==0, NA, poisson.test.result$conf.int[2])
+  }
+lower.upper<-as.data.frame(lower.upper); names(lower.upper)<-c("Positives_min", "Positives_max")
+ddPCR$Concentration.per.ul.lower = ifelse(ddPCR$Positives==0, NA, round((-log((ddPCR$Accepted.Droplets-lower.upper$Positives_min) / ddPCR$Accepted.Droplets)) / (0.00085), digits = 3))
+ddPCR$Concentration.GC.per.L.lower<-1000000*(rx.volume*ddPCR$Concentration.per.ul.lower)/effective.volume.DF
+ddPCR$Concentration.per.ul.upper = ifelse(ddPCR$Positives==0, NA, round((-log((ddPCR$Accepted.Droplets-lower.upper$Positives_max) / ddPCR$Accepted.Droplets)) / (0.00085), digits = 3))
+ddPCR$Concentration.GC.per.L.upper<-1000000*(rx.volume*ddPCR$Concentration.per.ul.upper)/effective.volume.DF
+```
+  
+  
+  
+  + Extract BRSV information for each run \
+Extract and prepare data
+```{r}
+BRSV<-data.ddPCR[, c("Run", "Target", "Sample_ID", "Conc(copies/µL)")]
+BRSV<-subset(BRSV, Target == "BRSV" & Sample_ID =="ref")
+BRSV<-BRSV[, c("Run", "Target", "Conc(copies/µL)")]
+```  
+Calcul average BRSV/uL of Rx \
+```{r}
+BRSV.summary<- BRSV %>%
+  group_by(as.factor(Run)) %>%
+  summarize(GC.per.rx =  mean(as.numeric(as.character(`Conc(copies/µL)`))), 
+            .groups = 'drop')
+names(BRSV.summary)[1]<-"Run"
+```
+
+  + Test for inhibition \
+Compute GC per uL reaction taking into account dilution factor for BRSV assay
+```{r}
+BRSV.sample<-cbind(ddPCR[, c("Run", "Target","Sample_ID", "CV", "Dilution")], ddPCR.GC.per.uL.rx)
+BRSV.sample$ddPCR.GC.per.uL.rx.DF<-BRSV.sample$ddPCR.GC.per.uL.rx*as.numeric(as.character(BRSV.sample$Dilution))
+BRSV.sample$ddPCR.GC.per.uL.rx.DF<-ifelse(BRSV.sample$Target == "BRSV", BRSV.sample$ddPCR.GC.per.uL.rx.DF, NA)
+```
+Determine if there is an inhibition using ratio BRSV-observed / BRSV-expected > 0.5 => no inhibition \
+*no = 1 and yes = 1000. I chose these two values to identify the NAs that will become 0 in the pivot table.*
+```{r}
+BRSV.sample.runinfo<-setDT(BRSV.summary)[BRSV.sample, on="Run"]
+BRSV.sample.runinfo$inhibition<-ifelse(BRSV.sample.runinfo$ddPCR.GC.per.uL.rx.DF/BRSV.sample.runinfo$GC.per.rx > 0.5, 1, 1000)
+```
+
+
+  
+5. Split the data per assay (1 assay-info = 1 column)
+
+  + BCoV 
+```{r}
+BCoV.log10.per.mL.sewage<-BCoV.exp.log10.per.mL.sewage
+BCoV<-BCoV.recovery
+```
+
+  + N1
+```{r}
+N1<-ifelse(ddPCR$Target=="N1", ddPCR.GC.per.L, NA)
+N1.droplets.LOD<-ifelse(ddPCR$Target=="N1", N1N2.droplets.LOD, NA)
+LOD.N1<-ifelse(ddPCR$Target=="N1", N1.LOD, NA)
+LOQ.N1<-ifelse(ddPCR$Target=="N1", N1.LOQ, NA)
+N1.lo<-ifelse(ddPCR$Target=="N1", ddPCR$Concentration.GC.per.L.lower, NA)
+N1.up<-ifelse(ddPCR$Target=="N1", ddPCR$Concentration.GC.per.L.upper, NA)
+NTC.N1.summary<-NTC.N1.summary
+```
+
+  + N2
+```{r}
+N2<-ifelse(ddPCR$Target=="N2", ddPCR.GC.per.L, NA)
+N2.droplets.LOD<-ifelse(ddPCR$Target=="N2", N1N2.droplets.LOD, NA)
+LOD.N2<-ifelse(ddPCR$Target=="N2", N2.LOD, NA)
+LOQ.N2<-ifelse(ddPCR$Target=="N2", N2.LOQ, NA)
+N2.lo<-ifelse(ddPCR$Target=="N2", ddPCR$Concentration.GC.per.L.lower, NA)
+N2.up<-ifelse(ddPCR$Target=="N2", ddPCR$Concentration.GC.per.L.upper, NA)
+NTC.N2.summary<-NTC.N2.summary
+```
+
+  + N1-N2
+```{r}
+N1N2.run.date<-ifelse(ddPCR$Target=="N1" | ddPCR$Target=="N2", ddPCR$run.date, NA)
+N1N2.effective.volume.DF<-ifelse(ddPCR$Target=="N1" | ddPCR$Target=="N2", effective.volume.DF, NA)
+N1N2.run.ID<-ifelse(ddPCR$Target=="N1" | ddPCR$Target=="N2", ddPCR$Run, NA)
+```
+
+  + PMMoV
+```{r}
+PMMoV<-ifelse(ddPCR$Target=="PMMoV", ddPCR.GC.per.L, NA)
+```
+
+  + BRSV
+```{r}
+InhibitionDetected<-BRSV.sample.runinfo$inhibition
+```
+
+
+6. Merge ddPCR data
+```{r}
+ddPCR.final<-cbind(ddPCR[,c("City", "Collection_Date", "Collection_Date_Start", "Target", "CV", "WWTPComments_for_CDC", "CDC_analytical_comment")], BCoV.log10.per.mL.sewage, BCoV, N1, N1.droplets.LOD, LOD.N1, LOQ.N1, N2, N2.droplets.LOD, LOD.N2, LOQ.N2, N1N2.run.date, N1.lo, N2.lo, N1.up, N2.up, N1N2.run.ID, N1N2.effective.volume.DF, PMMoV, InhibitionDetected)
+```
+
+
+
+### qPCR data (HF183 assay)
+
+1. Merge ddPCR and sample info data 
+```{r}
+data.qPCR.sinfo<-setDT(sample.info)[data.qPCR, on="Sample_ID"]
+```
+
+
+2. Select samples\
+Select "real-time" samples collected in one of the 12 WWTPs processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI were discarded.
+```{r}
+qPCR.sinfo.realtime<-subset(data.qPCR.sinfo, Sample_Type=="Real-time" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
+qPCR.sinfo.realtime<-subset(qPCR.sinfo.realtime, City=="Brookfield"| City=="Burlington"| City=="Cedarburg"| City=="Green Bay_DP"| City=="Green Bay_PLT"| City=="Milwaukee_JI"| City=="Milwaukee_SS"| City=="Port Washington"| City=="Racine"| City=="South Milwaukee"| City=="Village of Grafton"| City=="Waukesha")
+qPCR<-qPCR.sinfo.realtime
+```
+
+
+3. Calculate new fields:
+
+  + GC per reaction: y = slope + Cт + intercept
+  (from std_curves_.xls on "ecoli shape": slope = -3.37025, intercept = 37.136125)
+```{r echo = T, results = 'hide'}
+HF183.GC.per.rx<-10^((qPCR$Cт-37.136125)/(-3.37025))
+```                
+
+  + Effective volume per rx (NOT taking into account the dilution factor (DF)): volume processed (mL) / ( (RNA elution volume / RNA volume used per reaction (5 uL) ) * 1000
+```{r}
+effective.volume.qPCR<-as.numeric(as.character(qPCR$Processed_Volume))/(as.numeric(as.character(qPCR$RNA_Elution_Volume))/5)*1000
+```
+  
+  + Effective volume per rx (TAKING into account the dilution factor (DF)): Effective volume / Dilution factor
+```{r}
+effective.volume.DF.qPCR<-effective.volume.qPCR/as.numeric(as.character(qPCR$Dilution))
+```
+
+  + HF183 GC per L of sewage : GC per Rx (GC/uL) / Effective volume DF (uL) * 1000000
+```{r}
+HF183.qPCR.GC.per.L<-HF183.GC.per.rx/effective.volume.DF.qPCR*1000000
+```   
+
+4. Split the data per assay (1 assay-info = 1 column)
+
+  + HF183:
+```{r}
+HF183<-HF183.qPCR.GC.per.L
+```   
+
+5. Merge all data
+```{r}
+qPCR.final<-cbind(qPCR[,c("City", "Collection_Date", "Collection_Date_Start", "Target", "CV", "CDC_analytical_comment")], HF183)
+```
+
+
+
+
+### Merge ddPCR and qPCR data
+```{r}
+ddPCR.qPCR<-rbind(ddPCR.final, qPCR.final, fill=TRUE)
+```
+Format date
+```{r}
+ddPCR.qPCR$Collection_Date_Start<-as.Date(as.numeric(as.character(ddPCR.qPCR$Collection_Date_Start)), origin = "1899-12-30")
+ddPCR.qPCR$Collection_Date_Start<-format(as.Date(ddPCR.qPCR$Collection_Date_Start), "%m/%d/%Y")
+```
+
+# Generate final file
+
+1. Create Pivot Table
+```{r warning=FALSE}
+PV<-ddPCR.qPCR %>%
+  group_by(City, `Collection_Date_Start`, CV) %>%
+  summarize(N1_count = length(N1[!is.na(N1)]),
+            N1_avg = mean(N1, na.rm=TRUE), 
+            N1_sd = sd(N1, na.rm=TRUE), 
+            N1_se = sd(N1, na.rm=TRUE)/sqrt(length(N1[!is.na(N1)])),
+            N1_lo = round(mean(N1.lo, na.rm=TRUE), digits = 3),
+            N1_up = round(mean(N1.up, na.rm=TRUE), digits = 3),
+            N1_droplets_LOD = ifelse(sum(N1.droplets.LOD, na.rm=TRUE)/length(N1[!is.na(N1)]) == 1, 1, 0), 
+            N1_LOD = round(mean(LOD.N1, na.rm=TRUE), digits = 3),
+            N1_LOQ = round(mean(LOQ.N1, na.rm=TRUE), digits = 3),              
+            N2_count = length(N2[!is.na(N2)]),
+            N2_avg = mean(N2, na.rm=TRUE),
+            N2_sd = sd(N2, na.rm=TRUE),
+            N2_se = sd(N2, na.rm=TRUE)/sqrt(length(N2[!is.na(N1)])),
+            N2_lo = round(mean(N2.lo, na.rm=TRUE), digits = 3),
+            N2_up = round(mean(N2.up, na.rm=TRUE), digits = 3),
+            N2_droplets_LOD = ifelse(sum(N2.droplets.LOD, na.rm=TRUE)/length(N2[!is.na(N2)]) == 1, 1, 0), 
+            N2_LOD = round(mean(LOD.N2, na.rm=TRUE), digits = 3),
+            N2_LOQ = round(mean(LOQ.N2, na.rm=TRUE), digits = 3),       
+            N1N2_run = max(N1N2.run.date[!is.na(N1N2.run.date)]),
+            N1N2_effective_volume_mL = mean(N1N2.effective.volume.DF, na.rm=TRUE)/1000,
+            BCoV_log10_mL = mean(BCoV.log10.per.mL.sewage, na.rm=TRUE),
+            BCoV = mean(BCoV, na.rm=TRUE),
+            PMMoV = mean(PMMoV, na.rm=TRUE),
+            HF183 = mean(HF183, na.rm=TRUE),
+            Inhibition_Detect = sum(InhibitionDetected, na.rm=TRUE),
+            Run = paste(unique(N1N2.run.ID), collapse = "|"),
+            AnalyticalComments = paste(unique(CDC_analytical_comment, na.rm=TRUE), collapse = ";"),
+            WWTPComments = paste(unique(WWTPComments_for_CDC, na.rm=TRUE), collapse = ";"), 
+            .groups = 'drop')
+PV.df<-as.data.frame(PV)
+PV.df.NaN<-is.nan.data.frame(PV.df)
+PV.df[PV.df.NaN]<-NA
+```
+
+
+
+2. Transform variables to fit the CDC requirements\
+Transform dummy variables into "yes"/"no" variables
+```{r warning=FALSE}
+PV.df$N1_droplets_LOD_qual <- ifelse(PV.df$N1_droplets_LOD == 1, "yes", "no") 
+PV.df$N2_droplets_LOD_qual <- ifelse(PV.df$N2_droplets_LOD == 1, "yes", "no")
+PV.df$AnalyticalComments <- gsub("NA;", "", PV.df$AnalyticalComments)
+PV.df$InhibitionDetect <- ifelse(PV.df$Inhibition_Detect == 0, "not tested", ifelse(PV.df$Inhibition_Detect >= 1000, "yes", "no"))
+```
+
+3. Add new variables:
+
+  + Compute average between N1 and N2
+```{r}
+PV.df$N1N2_avg<-as.numeric((PV.df$N1_avg+PV.df$N2_avg)/2)
+```
+
+  + Determine if N1 and N2 assays are both classified as BLD
+```{r}
+PV.df$N1N2_droplets_LOD_qual<-ifelse(rowSums(PV.df[,c("N1_droplets_LOD", "N2_droplets_LOD")], na.rm=TRUE)==2, "yes", "no")
+```
+
+  + Determine N1-NTC count and N1-NTC amplify for each sample\
+  Extract the run-ID for each sample on which N1/N2 assay have been performed
+```{r warning=FALSE}
+NTC.run<-as.data.frame(setDT(PV.df)[, tstrsplit(Run, '[|]', type.convert=TRUE)])
+NTC.run$num<-row.names(NTC.run)
+NTC.run.melt<-reshape2::melt(NTC.run, id=c("num"))
+names(NTC.run.melt)[3]<-"Run"
+```
+  Merge with the NTC-N1 information
+```{r}  
+NTC.N1.run.melt.summary<-setDT(NTC.N1.summary)[NTC.run.melt, on="Run"]
+NTC.N1.run.melt.summary<-NTC.N1.run.melt.summary[,c("NTC_amplified_count", "NTC_count", "num")]
+NTC.N1.per.sample <- NTC.N1.run.melt.summary %>%
+  group_by(num) %>%
+  summarize(NTC_amplified_count = sum(NTC_amplified_count, na.rm=TRUE),
+            NTC_count = sum(NTC_count, na.rm=TRUE), 
+            .groups = 'drop')
+```
+  Transform dummy variables to "yes"/"no" variables
+```{r}
+NTC.N1.per.sample$NTC_amplify = ifelse(NTC.N1.per.sample$NTC_amplified_count != 0, "yes", "no")
+```
+Sort "num" variable to merge with "PV.df" data.frame
+```{r}
+NTC.N1.per.sample$num<-as.numeric(as.character(NTC.N1.per.sample$num))
+NTC.N1.per.sample<-NTC.N1.per.sample[order(NTC.N1.per.sample$num),]
+PV.df$NTC_N1_count<-ifelse(NTC.N1.per.sample$NTC_count>3,"more than 3", NTC.N1.per.sample$NTC_count)
+PV.df$NTC_N1_amplify<-NTC.N1.per.sample$NTC_amplify
+PV.df$NTC_N1_amplified_count<-NTC.N1.per.sample$NTC_amplified_count
+```
+
+  + Determine N2-NTC count and N2-NTC amplify for each sample\
+  Merge `NTC.run.melt` (created above) with the NTC-N2 information
+```{r}  
+NTC.N2.run.melt.summary<-setDT(NTC.N2.summary)[NTC.run.melt, on="Run"]
+NTC.N2.run.melt.summary<-NTC.N2.run.melt.summary[,c("NTC_amplified_count", "NTC_count", "num")]
+NTC.N2.per.sample <- NTC.N2.run.melt.summary %>%
+  group_by(num) %>%
+  summarize(NTC_amplified_count = sum(NTC_amplified_count, na.rm=TRUE),
+            NTC_count = sum(NTC_count, na.rm=TRUE), 
+            .groups = 'drop')
+```
+  Transform dummy variables to "yes"/"no" variables
+```{r}
+NTC.N2.per.sample$NTC_amplify = ifelse(NTC.N2.per.sample$NTC_amplified_count != 0, "yes", "no")
+```
+Sort "num" variable to merge with "PV.df" data.frame
+```{r}
+NTC.N2.per.sample$num<-as.numeric(as.character(NTC.N2.per.sample$num))
+NTC.N2.per.sample<-NTC.N2.per.sample[order(NTC.N2.per.sample$num),]
+PV.df$NTC_N2_count<-ifelse(NTC.N2.per.sample$NTC_count>3,"more than 3", NTC.N2.per.sample$NTC_count)
+PV.df$NTC_N2_amplify<-NTC.N2.per.sample$NTC_amplify
+PV.df$NTC_N2_amplified_count<-NTC.N2.per.sample$NTC_amplified_count
+```
+
+  + Add physico-chemical parameters
+```{r}
+PV.df$CV<-as.factor(PV.df$CV)
+metadata.parameter$CV<-as.factor(metadata.parameter$CV)
+metadata.parameter$`Daily.Avg.Flow.(MGD)`<-as.numeric(as.character(metadata.parameter$`Daily.Avg.Flow.(MGD)`))
+metadata.parameter$`TSS.(mg/L)`<-as.numeric(as.character(metadata.parameter$`TSS.(mg/L)`))
+metadata.parameter$pH<-as.numeric(as.character(metadata.parameter$pH))
+metadata.parameter$`BOD.(mg/L)`<-as.numeric(as.character(metadata.parameter$`BOD.(mg/L)`))
+
+PV.metadata<-setDT(metadata.parameter)[PV.df, on="CV"]
+PV.metadata$N1N2_effective_volume_mL<-as.numeric(as.character(PV.metadata$N1N2_effective_volume_mL))
+PV.metadata$SampleCollectTime <- format(strptime(PV.metadata$Collection.Start.Time, "%I:%M %p"), "%H:%M")
+```
+
+ + Add WWTPs info
+```{r}
+PV.metadata.WWTP<-setDT(WWTP.info)[PV.metadata, on="City"]
+PV.metadata.WWTP$CompositeFreq<-ifelse(PV.metadata.WWTP$City=="Milwaukee_JI", round(as.numeric(as.character(PV.metadata.WWTP$CompositeFreq_JI)), digits = 2), PV.metadata.WWTP$CompositeFreq)
+```
+
+ + Add methods info
+```{r}
+PV.metadata.WWTP.method<-cbind(PV.metadata.WWTP, method.info)
+```
+
+
+5. Format the final report\
+Select the variables
+```{r}
+report<-PV.metadata.WWTP.method[, c("WWTPName", "EPAID", "Zipcode", "CountyNames", "State", "CapacityMGD", "PopulationServed", "SampleType", "CompositeFreq", "SampleMatrix", "SampleLocation", "SampleLocationSpecify", "CV", "WWTPComments", "ConcentrationMethod", "ExtractionMethod", "PCRType", "LODRef", "QuantStanType", "QuantStanRef", "InhibitionMethod", "N1SARSCoV2Units", "N1_avg", "N1_droplets_LOD_qual", "N1_se", "NTC_N1_amplify", "NTC_N1_amplified_count", "NTC_N1_count", "N1_LOD", "N1_LOQ", "N2SARSCoV2Units", "N2_avg", "N2_droplets_LOD_qual", "N2_se", "NTC_N2_amplify", "NTC_N2_amplified_count", "NTC_N2_count", "N2_LOD", "N2_LOQ", "N1N2_avg", "N1N2_droplets_LOD_qual", "PMMoV", "HF183", "BCoV", "InhibitionDetect", "InhibitionAdjust", "AnalyticalComments", "Collection_Date_Start", "SampleCollectTime", "N1N2_run", "Daily.Avg.Flow.(MGD)", "N1N2_effective_volume_mL", "TSS.(mg/L)", "pH", "BOD.(mg/L)", "Conductivity.(uS/cm)", "Temp.(°C)", "DO", "BCoV_log10_mL", "N1_lo",	"N1_up", "N2_lo",	"N2_up")]
+```
+Rename them to fit CDC nomenclature
+```{r}
+names(report)<-c("WWTPName", "EPAID", "Zipcode", "CountyNames", "State", "CapacityMGD", "PopulationServed", "SampleType", "CompositeFreq", "SampleMatrix", "SampleLocation", "SampleLocationSpecify", "SampleID", "WWTPComments", "ConcentrationMethod", "ExtractionMethod", "PCRType", "LODRef", "QuantStanType", "QuantStanRef", "InhibitionMethod", "N1SARSCoV2Units", "N1SARSCoV2Conc", "N1SARSCoV2BelowLOD", "N1SARSCoV2StdError", "NTCAmplifyN1", "NumNTCAmplifyN1", "NumNoTargetControlN1", "N1_LOD", "N1_LOQ", "N2SARSCoV2Units", "N2SARSCoV2Conc", "N2SARSCoV2BelowLOD", "N2SARSCoV2StdError", "NTCAmplifyN2", "NumNTCAmplifyN2", "NumNoTargetControlN2", "N2_LOD", "N2_LOQ", "AvgSARSCoV2Conc", "AvgSARSCoV2BelowLOD", "PPMoVConc", "HF183", "BCoVRecRate", "InhibitionDetect", "InhibitionAdjust", "AnalyticalComments", "SampleCollectDate", "SampleCollectTime", "TestResultDate", "AverageFlowRate", "EquivSewageAmt", "TSS", "pH", "BOD", "Conductivity", "Temperature", "DO", "BCoVSpikeConc", "N1SARSCoV2CI95lo",	"N1SARSCoV2CI95up", "N2SARSCoV2CI95lo",	"N2SARSCoV2CI95up")
+```
+
+
+
+
+# Export
+```{r}
+date<-format(Sys.time(), "%Y-%m-%d_%H%M")
+write.table(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_", date, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", col.names = TRUE)
+#write.table(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_", date, "_XXXX.txt"), row.names = FALSE, quote = FALSE, sep = "|", na="", col.names = FALSE)
+
+paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_", date, ".txt")
+```
+
+
+# Checking part
+
+### Check tables
+```{r}
+pander(head(metadata.parameter))
+lapply(metadata.parameter,class)
+pander(head(report))
+```
+
+
+### Check merging steps
+```{r echo=FALSE}
+merging.check<-matrix(NA, nrow = 6, ncol = 2)
+merging.check[1,]<-c("nrow(data.ddPCR.sinfo)=nrow(data.ddPCR)", isTRUE(nrow(data.ddPCR.sinfo)==nrow(data.ddPCR)))
+merging.check[2,]<-c("nrow(data.qPCR.sinfo)=nrow(data.qPCR)", isTRUE(nrow(data.qPCR.sinfo)==nrow(data.qPCR)))
+merging.check[3,]<-c("nrow(PV.metadata.WWTP)=nrow(PV.metadata)", isTRUE(nrow(PV.metadata.WWTP)==nrow(PV.metadata)))
+merging.check[4,]<-c("nrow(NTC.run.melt)=nrow(NTC.N1.run.melt.summary)", isTRUE(nrow(NTC.run.melt)==nrow(NTC.N1.run.melt.summary)))
+merging.check[5,]<-c("nrow(NTC.run.melt)=nrow(NTC.N2.run.melt.summary)", isTRUE(nrow(NTC.run.melt)==nrow(NTC.N2.run.melt.summary)))
+merging.check[6,]<-c("nrow(PV.metadata)=nrow(PV.df)", isTRUE(nrow(PV.metadata)==nrow(PV.df)))
+colnames(merging.check)<-c("function","result")
+merging.check.FALSE<-which(merging.check[,2]==FALSE)
+merging.check.FALSE<-merging.check[merging.check.FALSE, ]
+if(isTRUE(nrow(merging.check.FALSE)>0)==TRUE){kable(merging.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+```
+
+
+
+### Check variables classes
+```{r echo=FALSE}
+variable.check<-matrix(NA, nrow = 46, ncol = 2)
+variable.check[1,]<-c("class(rx.volume)=numeric", isTRUE(class(rx.volume)=="numeric"))
+variable.check[2,]<-c("class(ddPCR.GC.per.uL.rx)=numeric", isTRUE(class(ddPCR.GC.per.uL.rx)=="numeric"))
+variable.check[3,]<-c("class(GC.per.rx)=numeric", isTRUE(class(GC.per.rx)=="numeric"))
+variable.check[4,]<-c("class(effective.volume.DF)=numeric", isTRUE(class(effective.volume.DF)=="numeric"))
+variable.check[5,]<-c("class(BCoV.exp.GC.per.L.sewage)=numeric", isTRUE(class(BCoV.exp.GC.per.L.sewage)=="numeric"))
+variable.check[6,]<-c("class(BCoV.obs.GC.per.L.sewage)=numeric", isTRUE(class(BCoV.obs.GC.per.L.sewage)=="numeric"))
+variable.check[7,]<-c("class(BCoV.recovery)=numeric", isTRUE(class(BCoV.recovery)=="numeric"))
+variable.check[8,]<-c("class(NTC$Amplified)=numeric", isTRUE(class(NTC$Amplified)=="numeric"))
+variable.check[9,]<-c("class(NTC$Positives)=numeric", isTRUE(class(NTC$Positives)=="numeric"))
+variable.check[10,]<-c("class(N1N2.droplets)=numeric", isTRUE(class(N1N2.droplets)=="numeric"))
+variable.check[11,]<-c("class(N1N2.droplets.LOD)=numeric", isTRUE(class(N1N2.droplets.LOD)=="numeric"))
+variable.check[12,]<-c("class(BRSV.sample$ddPCR.GC.per.uL.rx)=numeric", isTRUE(class(BRSV.sample$ddPCR.GC.per.uL.rx)=="numeric"))
+variable.check[13,]<-c("class(BRSV.sample$ddPCR.GC.per.uL.rx.DF)=numeric", isTRUE(class(BRSV.sample$ddPCR.GC.per.uL.rx.DF)=="numeric"))
+variable.check[14,]<-c("class(BRSV.sample.runinfo$inhibition)=numeric", isTRUE(class(BRSV.sample.runinfo$inhibition)=="numeric"))
+variable.check[15,]<-c("class(BRSV.sample.runinfo$GC.per.rx)=numeric", isTRUE(class(BRSV.sample.runinfo$GC.per.rx)=="numeric"))
+variable.check[16,]<-c("class(BCoV)=numeric", isTRUE(class(BCoV)=="numeric"))
+variable.check[17,]<-c("class(N1)=numeric", isTRUE(class(N1)=="numeric"))
+variable.check[18,]<-c("class(N1.droplets.LOD)=numeric", isTRUE(class(N1.droplets.LOD)=="numeric"))
+variable.check[19,]<-c("class(LOD.N1)=numeric", isTRUE(class(LOD.N1)=="numeric"))
+variable.check[20,]<-c("class(LOQ.N1)=numeric", isTRUE(class(LOQ.N1)=="numeric"))
+variable.check[21,]<-c("class(N2)=numeric", isTRUE(class(N2)=="numeric"))
+variable.check[22,]<-c("class(N2.droplets.LOD)=numeric", isTRUE(class(N2.droplets.LOD)=="numeric"))
+variable.check[23,]<-c("class(LOD.N2)=numeric", isTRUE(class(LOD.N2)=="numeric"))
+variable.check[24,]<-c("class(LOQ.N2)=numeric", isTRUE(class(LOQ.N2)=="numeric"))
+variable.check[25,]<-c("class(N1N2.effective.volume.DF)=numeric", isTRUE(class(N1N2.effective.volume.DF)=="numeric"))
+variable.check[26,]<-c("class(PMMoV)=numeric", isTRUE(class(PMMoV)=="numeric"))
+variable.check[27,]<-c("class(InhibitionDetected)=numeric", isTRUE(class(InhibitionDetected)=="numeric"))
+variable.check[28,]<-c("class(qPCR$Cт)=numeric", isTRUE(class(qPCR$Cт)=="numeric"))
+variable.check[29,]<-c("class(HF183.GC.per.rx)=numeric", isTRUE(class(HF183.GC.per.rx)=="numeric"))
+variable.check[30,]<-c("class(effective.volume.qPCR)=numeric", isTRUE(class(effective.volume.qPCR)=="numeric"))
+variable.check[31,]<-c("class(HF183)=numeric", isTRUE(class(HF183)=="numeric"))
+variable.check[32,]<-c("class(PV.df$N1_droplets_LOD)=numeric", isTRUE(class(PV.df$N1_droplets_LOD)=="numeric"))
+variable.check[33,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
+variable.check[34,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
+variable.check[35,]<-c("class(PV.df$Inhibition_Detect)=numeric", isTRUE(class(PV.df$Inhibition_Detect)=="numeric"))
+variable.check[36,]<-c("class(PV.df$N1_avg)=numeric", isTRUE(class(PV.df$N1_avg)=="numeric"))
+variable.check[37,]<-c("class(PV.df$N2_avg)=numeric", isTRUE(class(PV.df$N2_avg)=="numeric"))
+variable.check[38,]<-c("class(PV.df$N1N2_avg)=numeric", isTRUE(class(PV.df$N1N2_avg)=="numeric"))
+variable.check[39,]<-c("class(PV.df$N1_droplets_LOD)=numeric", isTRUE(class(PV.df$N1_droplets_LOD)=="numeric"))
+variable.check[40,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
+variable.check[41,]<-c("class(PV.metadata$N1N2_effective_volume_mL)=numeric", isTRUE(class(PV.metadata$N1N2_effective_volume_mL)=="numeric"))
+variable.check[42,]<-c("class(BCoV.exp.log10.per.mL.sewage)=numeric", isTRUE(class(BCoV.exp.log10.per.mL.sewage)=="numeric"))
+
+variable.check[43,]<-c("class(ddPCR$Accepted.Droplets)=numeric", isTRUE(class(ddPCR$Accepted.Droplets)=="numeric"))
+variable.check[44,]<-c("class(ddPCR$Positives$Positives)=numeric", isTRUE(class(ddPCR$Positives)=="numeric"))
+variable.check[45,]<-c("class(lower.upper$Positives_min)=numeric", isTRUE(class(lower.upper$Positives_min)=="numeric"))
+variable.check[46,]<-c("class(lower.upper$Positives_max)=numeric", isTRUE(class(lower.upper$Positives_max)=="numeric"))
+
+colnames(variable.check)<-c("function","result")
+variable.check.FALSE<-which(variable.check[,2]==FALSE)
+variable.check.FALSE<-merging.check[variable.check.FALSE, ]
+if(isTRUE(nrow(variable.check.FALSE)>0)==TRUE){kable(variable.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+
+```
+
+### Check classes in ddPCR.qPCR 
+```{r echo=FALSE}
+ddPCR.qPCR.check<-matrix(NA, nrow = 23, ncol = 2)
+ddPCR.qPCR.check[1,]<-c("class(ddPCR.qPCR$City)=character", isTRUE(class(ddPCR.qPCR$City)=="character"))
+ddPCR.qPCR.check[2,]<-c("class(ddPCR.qPCR$Collection_Date)=character", isTRUE(class(ddPCR.qPCR$Collection_Date)=="character"))
+ddPCR.qPCR.check[3,]<-c("class(ddPCR.qPCR$Collection_Date_Start)=character", isTRUE(class(ddPCR.qPCR$Collection_Date_Start)=="character"))
+ddPCR.qPCR.check[4,]<-c("class(ddPCR.qPCR$Target)=character", isTRUE(class(ddPCR.qPCR$Target)=="character"))
+ddPCR.qPCR.check[5,]<-c("class(ddPCR.qPCR$CV)=character", isTRUE(class(ddPCR.qPCR$CV)=="character"))
+ddPCR.qPCR.check[6,]<-c("class(ddPCR.qPCR$WWTPComments_for_CDC)=character", isTRUE(class(ddPCR.qPCR$WWTPComments_for_CDC)=="character"))
+ddPCR.qPCR.check[7,]<-c("class(ddPCR.qPCR$CDC_analytical_comment)=character", isTRUE(class(ddPCR.qPCR$CDC_analytical_comment)=="character"))
+ddPCR.qPCR.check[8,]<-c("class(ddPCR.qPCR$BCoV)=numeric", isTRUE(class(ddPCR.qPCR$BCoV)=="numeric"))
+ddPCR.qPCR.check[9,]<-c("class(ddPCR.qPCR$N1)=numeric", isTRUE(class(ddPCR.qPCR$N1)=="numeric"))
+ddPCR.qPCR.check[10,]<-c("class(ddPCR.qPCR$N1.droplets.LOD)=numeric", isTRUE(class(ddPCR.qPCR$N1.droplets.LOD)=="numeric"))
+ddPCR.qPCR.check[11,]<-c("class(ddPCR.qPCR$LOD.N1)=numeric", isTRUE(class(ddPCR.qPCR$LOD.N1)=="numeric"))
+ddPCR.qPCR.check[12,]<-c("class(ddPCR.qPCR$LOQ.N1)=numeric", isTRUE(class(ddPCR.qPCR$LOQ.N1)=="numeric"))
+ddPCR.qPCR.check[13,]<-c("class(ddPCR.qPCR$N2)=numeric", isTRUE(class(ddPCR.qPCR$N2)=="numeric"))
+ddPCR.qPCR.check[14,]<-c("class(ddPCR.qPCR$N2.droplets.LOD)=numeric", isTRUE(class(ddPCR.qPCR$N2.droplets.LOD)=="numeric"))
+ddPCR.qPCR.check[15,]<-c("class(ddPCR.qPCR$LOD.N2)=numeric", isTRUE(class(ddPCR.qPCR$LOD.N2)=="numeric"))
+ddPCR.qPCR.check[16,]<-c("class(ddPCR.qPCR$LOQ.N2)=numeric", isTRUE(class(ddPCR.qPCR$LOQ.N2)=="numeric"))
+ddPCR.qPCR.check[17,]<-c("class(ddPCR.qPCR$N1N2.run.date)=character", isTRUE(class(ddPCR.qPCR$N1N2.run.date)=="character"))
+ddPCR.qPCR.check[18,]<-c("class(ddPCR.qPCR$N1N2.run.ID)=character", isTRUE(class(ddPCR.qPCR$N1N2.run.ID)=="character"))
+ddPCR.qPCR.check[19,]<-c("class(ddPCR.qPCR$N1N2.effective.volume.DF)=numeric", isTRUE(class(ddPCR.qPCR$N1N2.effective.volume.DF)=="numeric"))
+ddPCR.qPCR.check[20,]<-c("class(ddPCR.qPCR$PMMoV)=numeric", isTRUE(class(ddPCR.qPCR$PMMoV)=="numeric"))
+ddPCR.qPCR.check[21,]<-c("class(ddPCR.qPCR$InhibitionDetected)=numeric", isTRUE(class(ddPCR.qPCR$InhibitionDetected)=="numeric"))
+ddPCR.qPCR.check[22,]<-c("class(ddPCR.qPCR$HF183)=numeric", isTRUE(class(ddPCR.qPCR$HF183)=="numeric"))
+ddPCR.qPCR.check[23,]<-c("class(ddPCR.qPCR$BCoV.log10.per.mL.sewage)=numeric", isTRUE(class(ddPCR.qPCR$BCoV.log10.per.mL.sewage)=="numeric"))
+colnames(ddPCR.qPCR.check)<-c("function","result")
+ddPCR.qPCR.check.FALSE<-which(ddPCR.qPCR.check[,2]==FALSE)
+ddPCR.qPCR.check.FALSE<-merging.check[ddPCR.qPCR.check.FALSE, ]
+if(isTRUE(nrow(ddPCR.qPCR.check.FALSE)>0)==TRUE){kable(ddPCR.qPCR.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+
+```
+
+
+
+### Check classes in PV.df
+```{r echo=FALSE}
+PV.df.check<-matrix(NA, nrow = 38, ncol = 2)
+PV.df.check[1,]<-c("class(PV.df$City)=character", isTRUE(class(PV.df$City)=="character"))
+PV.df.check[2,]<-c("class(PV.df$Collection_Date_Start)=character", isTRUE(class(PV.df$Collection_Date_Start)=="character"))
+PV.df.check[3,]<-c("class(PV.df$CV)=factor", isTRUE(class(PV.df$CV)=="factor"))
+PV.df.check[4,]<-c("class(PV.df$N1_count)=integer", isTRUE(class(PV.df$N1_count)=="integer"))
+PV.df.check[5,]<-c("class(PV.df$N1_avg)=numeric", isTRUE(class(PV.df$N1_avg)=="numeric"))
+PV.df.check[6,]<-c("class(PV.df$N1_sd)=numeric", isTRUE(class(PV.df$N1_sd)=="numeric"))
+PV.df.check[7,]<-c("class(PV.df$N1_se)=numeric", isTRUE(class(PV.df$N1_se)=="numeric"))
+PV.df.check[8,]<-c("class(PV.df$N1_droplets_LOD)=numeric", isTRUE(class(PV.df$N1_droplets_LOD)=="numeric"))
+PV.df.check[9,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
+PV.df.check[10,]<-c("class(PV.df$N1_LOD)=numeric", isTRUE(class(PV.df$N1_LOD)=="numeric"))
+PV.df.check[11,]<-c("class(PV.df$N1_LOQ)=numeric", isTRUE(class(PV.df$N1_LOQ)=="numeric"))
+PV.df.check[12,]<-c("class(PV.df$N2_count)=integer", isTRUE(class(PV.df$N2_count)=="integer"))
+PV.df.check[13,]<-c("class(PV.df$N2_avg)=numeric", isTRUE(class(PV.df$N2_avg)=="numeric"))
+PV.df.check[14,]<-c("class(PV.df$N2_sd)=numeric", isTRUE(class(PV.df$N2_sd)=="numeric"))
+PV.df.check[15,]<-c("class(PV.df$N2_se)=numeric", isTRUE(class(PV.df$N2_se)=="numeric"))
+PV.df.check[16,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
+PV.df.check[17,]<-c("class(PV.df$N2_LOD)=numeric", isTRUE(class(PV.df$N2_LOD)=="numeric"))
+PV.df.check[18,]<-c("class(PV.df$N2_LOQ)=numeric", isTRUE(class(PV.df$N2_LOQ)=="numeric"))
+PV.df.check[19,]<-c("class(PV.df$N1N2_run)=character", isTRUE(class(PV.df$N1N2_run)=="character"))
+PV.df.check[20,]<-c("class(PV.df$N1N2_effective_volume_mL)=numeric", isTRUE(class(PV.df$N1N2_effective_volume_mL)=="numeric"))
+PV.df.check[21,]<-c("class(PV.df$BCoV)=numeric", isTRUE(class(PV.df$BCoV)=="numeric"))
+PV.df.check[22,]<-c("class(PV.df$PMMoV)=numeric", isTRUE(class(PV.df$PMMoV)=="numeric"))
+PV.df.check[23,]<-c("class(PV.df$HF183)=numeric", isTRUE(class(PV.df$HF183)=="numeric"))
+PV.df.check[24,]<-c("class(PV.df$InhibitionDetect)=character", isTRUE(class(PV.df$InhibitionDetect)=="character"))
+PV.df.check[25,]<-c("class(PV.df$Run)=character", isTRUE(class(PV.df$Run)=="character"))
+PV.df.check[26,]<-c("class(PV.df$AnalyticalComments)=character", isTRUE(class(PV.df$AnalyticalComments)=="character"))
+PV.df.check[27,]<-c("class(PV.df$WWTPComments)=character", isTRUE(class(PV.df$WWTPComments)=="character"))
+PV.df.check[28,]<-c("class(PV.df$N1_droplets_LOD_qual)=character", isTRUE(class(PV.df$N1_droplets_LOD_qual)=="character"))
+PV.df.check[29,]<-c("class(PV.df$N2_droplets_LOD_qual)=character", isTRUE(class(PV.df$N2_droplets_LOD_qual)=="character"))
+PV.df.check[30,]<-c("class(PV.df$N1N2_avg)=numeric", isTRUE(class(PV.df$N1N2_avg)=="numeric"))
+PV.df.check[31,]<-c("class(PV.df$N1N2_droplets_LOD_qual)=character", isTRUE(class(PV.df$N1N2_droplets_LOD_qual)=="character"))
+PV.df.check[32,]<-c("class(PV.df$NTC_N1_count)=character", isTRUE(class(PV.df$NTC_N1_count)=="character"))
+PV.df.check[33,]<-c("class(PV.df$NTC_N1_amplify)=character", isTRUE(class(PV.df$NTC_N1_amplify)=="character"))
+PV.df.check[34,]<-c("class(PV.df$NTC_N1_amplified_count)=numeric", isTRUE(class(PV.df$NTC_N1_amplified_count)=="numeric"))
+PV.df.check[35,]<-c("class(PV.df$NTC_N2_count)=character", isTRUE(class(PV.df$NTC_N2_count)=="character"))
+PV.df.check[36,]<-c("class(PV.df$NTC_N2_amplify)=character", isTRUE(class(PV.df$NTC_N2_amplify)=="character"))
+PV.df.check[37,]<-c("class(PV.df$NTC_N2_amplified_count)=numeric", isTRUE(class(PV.df$NTC_N2_amplified_count)=="numeric"))
+PV.df.check[38,]<-c("class(PV.df$BCoV_log10_mL)=numeric", isTRUE(class(PV.df$BCoV_log10_mL)=="numeric"))
+colnames(PV.df.check)<-c("function","result")
+PV.df.check.FALSE<-which(PV.df.check[,2]==FALSE)
+PV.df.check.FALSE<-merging.check[PV.df.check.FALSE, ]
+if(isTRUE(nrow(PV.df.check.FALSE)>0)==TRUE){kable(PV.df.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+
+```
+
+
+### Check classes in report
+```{r echo=FALSE}
+report.check<-matrix(NA, nrow = 59, ncol = 2)
+report.check[1,]<-c("class(report$WWTPName)=character", isTRUE(class(report$WWTPName)=="character"))
+report.check[2,]<-c("class(report$EPAID)=character", isTRUE(class(report$EPAID)=="character"))
+report.check[3,]<-c("class(report$Zipcode)=numeric", isTRUE(class(report$Zipcode)=="numeric"))
+report.check[4,]<-c("class(report$CountyNames)=character", isTRUE(class(report$CountyNames)=="character"))
+report.check[5,]<-c("class(report$State)=character", isTRUE(class(report$State)=="character"))
+report.check[6,]<-c("class(report$CapacityMGD)=numeric", isTRUE(class(report$CapacityMGD)=="numeric"))
+report.check[7,]<-c("class(report$PopulationServed)=numeric", isTRUE(class(report$PopulationServed)=="numeric"))
+report.check[8,]<-c("class(report$SampleType)=character", isTRUE(class(report$SampleType)=="character"))
+report.check[9,]<-c("class(report$CompositeFreq)=numeric", isTRUE(class(report$CompositeFreq)=="numeric"))
+report.check[10,]<-c("class(report$SampleMatrix)=character", isTRUE(class(report$SampleMatrix)=="character"))
+report.check[11,]<-c("class(report$SampleLocation)=character", isTRUE(class(report$SampleLocation)=="character"))
+report.check[12,]<-c("class(report$SampleLocationSpecify)=numeric", isTRUE(class(report$SampleLocationSpecify)=="numeric"))
+report.check[13,]<-c("class(report$SampleID)=factor", isTRUE(class(report$SampleID)=="factor"))
+report.check[14,]<-c("class(report$WWTPComments)=character", isTRUE(class(report$WWTPComments)=="character"))
+report.check[15,]<-c("class(report$ConcentrationMethod)=character", isTRUE(class(report$ConcentrationMethod)=="character"))
+report.check[16,]<-c("class(report$ExtractionMethod)=character", isTRUE(class(report$ExtractionMethod)=="character"))
+report.check[17,]<-c("class(report$PCRType)=character", isTRUE(class(report$PCRType)=="character"))
+report.check[18,]<-c("class(report$LODRef)=character", isTRUE(class(report$LODRef)=="character"))
+report.check[19,]<-c("class(report$QuantStanType)=character", isTRUE(class(report$QuantStanType)=="character"))
+report.check[20,]<-c("class(report$QuantStanRef)=character", isTRUE(class(report$QuantStanRef)=="character"))
+report.check[21,]<-c("class(report$InhibitionMethod)=character", isTRUE(class(report$InhibitionMethod)=="character"))
+report.check[22,]<-c("class(report$N1_LOD)=numeric", isTRUE(class(report$N1_LOD)=="numeric"))
+report.check[23,]<-c("class(report$N1_LOQ)=numeric", isTRUE(class(report$N1_LOQ)=="numeric"))
+report.check[24,]<-c("class(report$N2_LOD)=numeric", isTRUE(class(report$N2_LOD)=="numeric"))
+report.check[25,]<-c("class(report$N2_LOQ)=numeric", isTRUE(class(report$N2_LOQ)=="numeric"))
+report.check[26,]<-c("class(report$N1SARSCoV2Units)=character", isTRUE(class(report$N1SARSCoV2Units)=="character"))
+report.check[27,]<-c("class(report$N1SARSCoV2Conc)=numeric", isTRUE(class(report$N1SARSCoV2Conc)=="numeric"))
+report.check[28,]<-c("class(report$N1SARSCoV2BelowLOD)=character", isTRUE(class(report$N1SARSCoV2BelowLOD)=="character"))
+report.check[29,]<-c("class(report$N1SARSCoV2StdError)=numeric", isTRUE(class(report$N1SARSCoV2StdError)=="numeric"))
+report.check[30,]<-c("class(report$NTCAmplifyN1)=character", isTRUE(class(report$NTCAmplifyN1)=="character"))
+report.check[31,]<-c("class(report$NumNTCAmplifyN1)=numeric", isTRUE(class(report$NumNTCAmplifyN1)=="numeric"))
+report.check[32,]<-c("class(report$NumNoTargetControlN1)=character", isTRUE(class(report$NumNoTargetControlN1)=="character"))
+report.check[33,]<-c("class(report$N2SARSCoV2Units)=character", isTRUE(class(report$N2SARSCoV2Units)=="character"))
+report.check[34,]<-c("class(report$N2SARSCoV2Conc)=numeric", isTRUE(class(report$N2SARSCoV2Conc)=="numeric"))
+report.check[35,]<-c("class(report$N2SARSCoV2BelowLOD)=character", isTRUE(class(report$N2SARSCoV2BelowLOD)=="character"))
+report.check[36,]<-c("class(report$N2SARSCoV2StdError)=numeric", isTRUE(class(report$N2SARSCoV2StdError)=="numeric"))
+report.check[37,]<-c("class(report$NTCAmplifyN2)=character", isTRUE(class(report$NTCAmplifyN2)=="character"))
+report.check[38,]<-c("class(report$NumNTCAmplifyN2)=numeric", isTRUE(class(report$NumNTCAmplifyN2)=="numeric"))
+report.check[39,]<-c("class(report$NumNoTargetControlN2)=character", isTRUE(class(report$NumNoTargetControlN2)=="character"))
+report.check[40,]<-c("class(report$AvgSARSCoV2Conc)=numeric", isTRUE(class(report$AvgSARSCoV2Conc)=="numeric"))
+report.check[41,]<-c("class(report$AvgSARSCoV2BelowLOD)=character", isTRUE(class(report$AvgSARSCoV2BelowLOD)=="character"))
+report.check[42,]<-c("class(report$PPMoVConc)=numeric", isTRUE(class(report$PPMoVConc)=="numeric"))
+report.check[43,]<-c("class(report$HF183)=numeric", isTRUE(class(report$HF183)=="numeric"))
+report.check[44,]<-c("class(report$BCoVRecRate)=numeric", isTRUE(class(report$BCoVRecRate)=="numeric"))
+report.check[45,]<-c("class(report$InhibitionDetect)=character", isTRUE(class(report$InhibitionDetect)=="character"))
+report.check[46,]<-c("class(report$InhibitionAdjust)=character", isTRUE(class(report$InhibitionAdjust)=="character"))
+report.check[47,]<-c("class(report$AnalyticalComments)=character", isTRUE(class(report$AnalyticalComments)=="character"))
+report.check[48,]<-c("class(report$SampleCollectDate)=character", isTRUE(class(report$SampleCollectDate)=="character"))
+report.check[49,]<-c("class(report$SampleCollectTime)=character", isTRUE(class(report$SampleCollectTime)=="character"))
+report.check[50,]<-c("class(report$TestResultDate)=character", isTRUE(class(report$TestResultDate)=="character"))
+report.check[51,]<-c("class(report$AverageFlowRate)=numeric", isTRUE(class(report$AverageFlowRate)=="numeric"))
+report.check[52,]<-c("class(report$EquivSewageAmt)=numeric", isTRUE(class(report$EquivSewageAmt)=="numeric"))
+report.check[53,]<-c("class(report$TSS)=numeric", isTRUE(class(report$TSS)=="numeric"))
+report.check[54,]<-c("class(report$pH)=numeric", isTRUE(class(report$pH)=="numeric"))
+report.check[55,]<-c("class(report$BOD)=numeric", isTRUE(class(report$BOD)=="numeric"))
+report.check[56,]<-c("class(report$Conductivity)=numeric", isTRUE(class(report$Conductivity)=="numeric"))
+report.check[57,]<-c("class(report$Temperature)=numeric", isTRUE(class(report$Temperature)=="numeric"))
+report.check[58,]<-c("class(report$DO)=numeric", isTRUE(class(report$DO)=="numeric"))
+report.check[59,]<-c("class(report$BCoVSpikeConc)=numeric", isTRUE(class(report$BCoVSpikeConc)=="numeric"))
+colnames(report.check)<-c("function","result")
+report.check.FALSE<-which(report.check[,2]==FALSE)
+report.check.FALSE<-merging.check[report.check.FALSE, ]
+if(isTRUE(nrow(report.check.FALSE)>0)==TRUE){kable(report.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+
+```
+
+
+
+
+# Visual check of the data
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N1SARSCoV2Conc))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+    geom_errorbar(
+    aes(ymin = N1SARSCoV2CI95lo, ymax = N1SARSCoV2CI95up),
+    width = 0.1,
+    size = 0.3,
+    position = position_dodge(0.9)
+  ) +
+  ggtitle("N1 concentration and Poisson-based 95% confidence interval")
+``` 
+
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N2SARSCoV2Conc))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+      geom_errorbar(
+    aes(ymin = N2SARSCoV2CI95lo, ymax = N2SARSCoV2CI95up),
+    width = 0.1,
+    size = 0.3,
+    position = position_dodge(0.9)
+  ) +
+  ggtitle("N2 concentration and Poisson-based 95% confidence interval")
+```
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=AvgSARSCoV2Conc))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+  ggtitle("N1/N2 avg concentration")
+```
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=BCoVRecRate))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free") + 
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+  ggtitle("BCoV recovery")
+```
+
+
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=log10(PPMoVConc)))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free") + 
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+  ggtitle("PMMoV concentration - log10")
+```
+
+```{r echo=FALSE, dpi=300}
+ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=log10(HF183)))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free") + 
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+  ggtitle("HF183 concentration - log10")
+```
+
+
+
