@@ -62,9 +62,9 @@ At this step, the freshly created folder should contain:
 5. Check the database output by looking at the table below ```pander(head(report))```. Make sure it does not contains anomalies.
 6. Check that all variable classes are okay (Figure 1). If something is wrong, then it should be explicit.
 
-<a href="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr"><img src="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
+![Figure 1](<a href="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr"><img src="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />)
 **Figure 1**
-#
+
 
 7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. Flag the samples that look like outliers:
 - Open **RawData** tab in the big spreadsheet
