@@ -73,6 +73,7 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
 
 
 2. Locate the .csv file (Figure 4) that contains the sample metadata and copy and paste it into the folder (you freshly created) that contains the amplification files.
+
 <a href="https://drive.google.com/uc?export=view&id=1kviOYS5-ZXw5Mbd8Dqisn_AB9Stc_i9Q"><img src="https://drive.google.com/uc?export=view&id=1kviOYS5-ZXw5Mbd8Dqisn_AB9Stc_i9Q" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
    **Figure 4**  
 
