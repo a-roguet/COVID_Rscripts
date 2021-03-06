@@ -27,11 +27,10 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
 
    > On my USB key for example
    
-   <iframe src="https://drive.google.com/file/d/1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg/preview" width="640" height="480"></iframe>
+<a href="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg"><img src="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />   
    **Figure 1**  
    
    
-<a href="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg"><img src="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />   
    
    
 6. Create a folder on your USB key to store the ddPCR amplification data. The folder name has to be written as followed:
@@ -54,7 +53,7 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
    >
    >   If you run a FAM or HEX singleplex assay, the column 2 or 1 will be emptied, respectively.
 
-<iframe src="https://drive.google.com/file/d/1XIWNEXdM2SUqEKvFcwZs4T2vzKhFCPa7/preview" width="640" height="480"></iframe>
+<a href="https://drive.google.com/uc?export=view&id=1XIWNEXdM2SUqEKvFcwZs4T2vzKhFCPa7"><img src="https://drive.google.com/uc?export=view&id=1XIWNEXdM2SUqEKvFcwZs4T2vzKhFCPa7" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
   **Figure 2**  
 
 
@@ -68,13 +67,13 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
 
    > Computer > Windows7_OS (C:) > QuantaLife > Data > YOUR RUN ID
 
-<iframe src="https://drive.google.com/file/d/1xzWglRG4GgHjAElUlsrmUI_YdJMbRIqG/preview" width="640" height="480"></iframe>
+<a href="https://drive.google.com/uc?export=view&id=1xzWglRG4GgHjAElUlsrmUI_YdJMbRIqG"><img src="https://drive.google.com/uc?export=view&id=1xzWglRG4GgHjAElUlsrmUI_YdJMbRIqG" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
    **Figure 3**
 
 
 
 2. Locate the .csv file (Figure 4) that contains the sample metadata and copy and paste it into the folder (you freshly created) that contains the amplification files.
-<iframe src="https://drive.google.com/file/d/1kviOYS5-ZXw5Mbd8Dqisn_AB9Stc_i9Q/preview" width="640" height="480"></iframe>
+<a href="https://drive.google.com/uc?export=view&id=1kviOYS5-ZXw5Mbd8Dqisn_AB9Stc_i9Q"><img src="https://drive.google.com/uc?export=view&id=1kviOYS5-ZXw5Mbd8Dqisn_AB9Stc_i9Q" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
    **Figure 4**  
 
 
