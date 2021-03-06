@@ -31,7 +31,7 @@ Notes: Because of the new probes, ddPCR data can be processed using QuantaSoft i
    **Figure 1**  
    
    
-<a href="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg"><img src="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg" style="width: 650px; max-width: 100%; height: auto" title="Click to enlarge picture" />   
+<a href="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg"><img src="https://drive.google.com/uc?export=view&id=1M7dwYHuTkAgVOtMKyOWW9Hl_LhTjcbjg" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />   
    
    
 6. Create a folder on your USB key to store the ddPCR amplification data. The folder name has to be written as followed:
