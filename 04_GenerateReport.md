@@ -62,7 +62,7 @@ At this step, the freshly created folder should contain:
 5. Check the database output by looking at the table below ```pander(head(report))```. Make sure it does not contains anomalies.
 6. Check that all variable classes are okay (Figure 1). If something is wrong, then it should be explicit.
 
-<a href="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr"><img src="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
+<a href="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr"><img src="https://drive.google.com/uc?export=view&id=1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
 **Figure 1**
 
 7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. Flag the samples that look like outliers:
@@ -101,7 +101,7 @@ The database we send to DHS should:
    - Database number (based on the last database sent to DHS) (Figure 2 #3)
 
 
-<a href="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo"><img src="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
+<a href="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo"><img src="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
 **Figure 2.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
 
 
@@ -129,13 +129,13 @@ The script will generate in the folder created previously:
 4. Inspection of the file **DatabaseCuration.html**
 - It indicates how many samples have been discarded because the N1/N2 (Figure 3 #1) and/or average daily flow (Figure 3 #2) data are missing.
 
-<a href="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI"><img src="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
+<a href="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI"><img src="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
 **Figure 3** 
 
 
 - It indicates how many updated and new samples are in the database that will be sent to DHS (Figure 4)
 
-<a href="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8"><img src="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
+<a href="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8"><img src="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
 **Figure 4**
 
 
@@ -158,7 +158,7 @@ The script will generate in the folder created previously:
    
    >  DHFS > secure > DHS_Covid19 > UWM > PROD
 
-<a href="https://drive.google.com/uc?export=view&id=1m5SshZ83YW7j03klZgUaAfVhRF3agxyo"><img src="https://drive.google.com/uc?export=view&id=1m5SshZ83YW7j03klZgUaAfVhRF3agxyo" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
+<a href="https://drive.google.com/uc?export=view&id=1m5SshZ83YW7j03klZgUaAfVhRF3agxyo"><img src="https://drive.google.com/uc?export=view&id=1m5SshZ83YW7j03klZgUaAfVhRF3agxyo" style="width: 65px; max-width: 60%; height: auto" title="Click to enlarge picture" />
 **Figure 5**
 
 5. On FileZilla, **right click** on the database you want to send, and click on **upload**
