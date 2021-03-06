@@ -100,9 +100,9 @@ The database we send to DHS should:
    - Path to the database in the freshly created folder (Figure 2 #2)
    - Database number (based on the last database sent to DHS) (Figure 2 #3)
 
+
 <a href="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo"><img src="https://drive.google.com/uc?export=view&id=1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
 **Figure 2.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
-
 
 
 
@@ -128,11 +128,13 @@ The script will generate in the folder created previously:
 
 4. Inspection of the file **DatabaseCuration.html**
 - It indicates how many samples have been discarded because the N1/N2 (Figure 3 #1) and/or average daily flow (Figure 3 #2) data are missing.
+
 <a href="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI"><img src="https://drive.google.com/uc?export=view&id=1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
 **Figure 3** 
 
 
 - It indicates how many updated and new samples are in the database that will be sent to DHS (Figure 4)
+
 <a href="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8"><img src="https://drive.google.com/uc?export=view&id=1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
 **Figure 4**
 
