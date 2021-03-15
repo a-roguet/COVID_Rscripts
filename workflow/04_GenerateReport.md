@@ -10,7 +10,11 @@ Congrats, you are almost done! This last workflow will guide to (i) generate the
 
 1. Make sure that you flagged all the samples that have to be discarded from the process by adding "need rerun" in their sample_ID. Only good data can be sent to DHS/CDC (see workflow )
 2. Make sure all WWTP parameters have been checked (the best is right before starting that step, lessening the chances that someone added poorly formatted data).
-3. If the big-spreadsheet is open, make sure it has been saved. To avoid working on an outdated version.
+3. If the big-spreadsheet is open, make sure it has been saved (to avoid working on an outdated version). Close the big-spreadsheet.
+4. Make sure OneDrive Desktop is up-do-date (Figure 1). If not, you will generate a database with out-of-date data!
+
+<iframe src="https://drive.google.com/file/d/1ZvdZwll7P9UcVV4_IjN6iJal-XphV-3T/preview" width="640" height="480"></iframe>
+**Figure 1**
 
 
 
@@ -60,10 +64,10 @@ At this step, the freshly created folder should contain:
 3. Check the WWTP parameters input by looking at the table below ```pander(head(metadata.parameter))```. Make sure it does not contains anomalies.
 4. Check the variables classes in the WWTP parameters by looking below ```lapply(metadata.parameter,class)```. Parameters should be classified as "numeric". If not, make sure it didn't affect the workflow and that everything looks good in the final database.
 5. Check the database output by looking at the table below ```pander(head(report))```. Make sure it does not contains anomalies.
-6. Check that all variable classes are okay (Figure 1). If something is wrong, then it should be explicit.
+6. Check that all variable classes are okay (Figure 2). If something is wrong, then it should be explicit.
 
 <iframe src="https://drive.google.com/file/d/1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr/preview" width="640" height="480"></iframe>
-**Figure 1**
+**Figure 2**
 
 7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. Flag the samples that look like outliers:
 - Open **RawData** tab in the big spreadsheet
@@ -96,12 +100,12 @@ The database we send to DHS should:
    
 
 2. Set up some parameters, add: 
-   - Path to the last database sent to DHS (Figure 2 #1)
-   - Path to the database in the freshly created folder (Figure 2 #2)
-   - Database number (based on the last database sent to DHS) (Figure 2 #3)
+   - Path to the last database sent to DHS (Figure 3 #1)
+   - Path to the database in the freshly created folder (Figure 3 #2)
+   - Database number (based on the last database sent to DHS) (Figure 3 #3)
 
 <iframe src="https://drive.google.com/file/d/1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo/preview" width="640" height="480"></iframe>
-**Figure 2.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
+**Figure 3.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
 
 
 
@@ -127,43 +131,49 @@ The script will generate in the folder created previously:
 
 
 4. Inspection of the file **DatabaseCuration.html**
-- It indicates how many samples have been discarded because the N1/N2 (Figure 3 #1) and/or average daily flow (Figure 3 #2) data are missing.
+- It indicates how many samples have been discarded because the N1/N2 (Figure 4 #1) and/or average daily flow (Figure 4 #2) data are missing.
 <iframe src="https://drive.google.com/file/d/1mFwNjfPqBq6n3d0zRIZlPgOnovSYxkuI/preview" width="640" height="480"></iframe>
-**Figure 3** 
+**Figure 4** 
 
 
-- It indicates how many updated and new samples are in the database that will be sent to DHS (Figure 4)
+- It indicates how many updated and new samples are in the database that will be sent to DHS (Figure 5)
 <iframe src="https://drive.google.com/file/d/1ScoODnt-Gvw_Nbym6koAdMrPD3zLxFZ8/preview" width="640" height="480"></iframe>
-**Figure 4**
+**Figure 5**
 
 
 
 ## Send the database to the DHS server
 
 1. Copy and paste the last version of the curated database on the big-mac in the folder (a shortcut should be available in the Desktop):
-   > HOME > cdc_covid_report
+   > HOME (genomics) > cdc_covid_report
 
    > If your database number is **27**, make sure the last database number is **26**. If not, you have to investigate...
 
 
-2. Open FileZilla. 
+2. Open FileZilla (Figure 6).
+
+<iframe src="https://drive.google.com/file/d/1MBXRRVSdhafZ_FOdqdNtkPahCaPBpzR3/preview" width="640" height="480"></iframe>
+**Figure 6** 
    
 >The DHS server should be properly configured.
 
-3. Click on Server > Reconnect
+3. Click on Server > Reconnect (Figure 7)
 
-4. Now that you are connected to the DHS server, make sure that you are in the right folder (Figure 5):
+<iframe src="https://drive.google.com/file/d/1O71UzqpnTQzABRbg0kiJUFUl4QHOTr3h/preview" width="640" height="480"></iframe>
+**Figure 7**
+
+4. Now that you are connected to the DHS server, make sure that you are in the right folder (Figure 8):
    
    >  DHFS > secure > DHS_Covid19 > UWM > PROD
 
 <iframe src="https://drive.google.com/file/d/1m5SshZ83YW7j03klZgUaAfVhRF3agxyo/preview" width="640" height="480"></iframe>
-**Figure 5**
+**Figure 8**
 
 5. On FileZilla, **right click** on the database you want to send, and click on **upload**
 
 6. You should now see the file on the right side of the screen. Congrat, you just uploaded the database to the DHS server. 
 
-7. Close Filezilla
+7. Close FileZilla
 
 8. Enjoy a cup of coffee or tea!
 
