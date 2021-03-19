@@ -57,7 +57,7 @@ source(here(working_directory, run_ID, "function_ddPCR.R"))
 
 
 ## Run analysis
-```{r dplyr, stringr, data.table, message=FALSE}
+```{r dplyr, stringr, data.table, message=FALSE, warning = FALSE}
 Analyse_ddPCR_results()
 ```
 
