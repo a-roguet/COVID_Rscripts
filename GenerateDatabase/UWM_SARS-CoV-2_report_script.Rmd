@@ -147,9 +147,9 @@ data.ddPCR.sinfo<-setDT(sample.info)[data.ddPCR, on="Sample_ID"]
 
 
 3. Select samples \
-Select "real-time" samples collected in the 12 WWTPs monitored and processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI were discarded.
+Select "real-time" samples collected in the 12 WWTPs monitored and processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI are discarded. Only samples not classified as "need rerun" or other labelling are considered. 
 ```{r}
-ddPCR.sinfo.realtime<-subset(data.ddPCR.sinfo, Sample_Type=="Real-time" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
+ddPCR.sinfo.realtime<-subset(data.ddPCR.sinfo, Sample_Type=="Real-time" & NeedRerun == "" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
 ddPCR.sinfo.realtime<-subset(ddPCR.sinfo.realtime, City=="Brookfield"| City=="Burlington"| City=="Cedarburg"| City=="Green Bay_DP"| City=="Green Bay_PLT"| City=="Milwaukee_JI"| City=="Milwaukee_SS"| City=="Port Washington"| City=="Racine"| City=="South Milwaukee"| City=="Village of Grafton"| City=="Waukesha")
 ddPCR<-ddPCR.sinfo.realtime
 ```
