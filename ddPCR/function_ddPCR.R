@@ -214,7 +214,7 @@ Analyse_ddPCR_results <- function() {
     
     results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
     names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
-    results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, "okay")
+    results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
     results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.multiplex.export$Run<-run_ID
     results.multiplex.export$Comment<-""
@@ -222,7 +222,8 @@ Analyse_ddPCR_results <- function() {
     results.multiplex.export<-setDT(samples)[results.multiplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.multiplex.export)))
     results.multiplex.export<-results.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-    
+    results.multiplex.export$NeedRerun<-ifelse(results.multiplex.export$Flag.positive.droplets=="okay" & results.multiplex.export$Flag.total.droplets == "okay" & (results.multiplex.export$Flag.FAM_HEX.difference<4 | results.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.multiplex.export$Comment == "", "", "need_rerun")
+    results.multiplex.export<-results.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
 
     ## Export the data ## 
     write.table(results.multiplex.export, paste0("results_N1N2.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
@@ -308,7 +309,7 @@ if(BCoVBRSVmultiplex>0){
   
   results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
   names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
-  results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, "okay")
+  results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
   results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
   results.multiplex.export$Run<-run_ID
   results.multiplex.export$Comment<-""
@@ -316,7 +317,8 @@ if(BCoVBRSVmultiplex>0){
   results.multiplex.export<-setDT(samples)[results.multiplex.export, on="Well"]
   #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.multiplex.export)))
   results.multiplex.export<-results.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-  
+  results.multiplex.export$NeedRerun<-ifelse(results.multiplex.export$Flag.positive.droplets=="okay" & results.multiplex.export$Flag.total.droplets == "okay" & (results.multiplex.export$Flag.FAM_HEX.difference<4 | results.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.multiplex.export$Comment == "", "", "need_rerun")
+  results.multiplex.export<-results.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
   
   ## Export the data ## 
   write.table(results.multiplex.export, paste0("results_BCOVBRSV.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
@@ -374,7 +376,7 @@ if(BCoVBRSVmultiplex>0){
     results.FAMsingleplex.export<-results.FAMsingleplex[, c(1,2,5,6,7,10,12)]
     names(results.FAMsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.FAMsingleplex.export$Target<-singleplex_FAMassay
-    results.FAMsingleplex.export$Flag.positive.droplets<-ifelse(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets>0.7,results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets, "okay")
+    results.FAMsingleplex.export$Flag.positive.droplets<-ifelse(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
     results.FAMsingleplex.export$Flag.total.droplets<-ifelse(results.FAMsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.FAMsingleplex.export$Well<-row.names(results.FAMsingleplex.export)
     results.FAMsingleplex.export$Run<-run_ID
@@ -385,6 +387,8 @@ if(BCoVBRSVmultiplex>0){
     results.FAMsingleplex.export<-setDT(samples)[results.FAMsingleplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.FAMsingleplex.export)))
     results.FAMsingleplex.export<-results.FAMsingleplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
+    results.FAMsingleplex.export$NeedRerun<-ifelse(results.FAMsingleplex.export$Flag.positive.droplets=="okay" & results.FAMsingleplex.export$Flag.total.droplets == "okay" & (results.FAMsingleplex.export$Flag.FAM_HEX.difference<4 | results.FAMsingleplex.export$Flag.FAM_HEX.difference=="okay") & results.FAMsingleplex.export$Comment == "", "", "need_rerun")
+    results.FAMsingleplex.export<-results.FAMsingleplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     
     write.table(results.FAMsingleplex.export, paste0("results_", singleplex_FAMassay, "_FAMsingleplex.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
     write.table(results.FAMsingleplex, paste0("results_details_", singleplex_FAMassay, "_FAMsingleplex.csv"), quote = FALSE, row.names = TRUE, col.names = TRUE, sep = ",")
@@ -443,7 +447,7 @@ if(BCoVBRSVmultiplex>0){
     results.HEXsingleplex.export<-results.HEXsingleplex[, c(1,3,5,8,9,11,13)]
     names(results.HEXsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.HEXsingleplex.export$Target<-singleplex_HEXassay
-    results.HEXsingleplex.export$Flag.positive.droplets<-ifelse(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets>0.7,results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets, "okay")
+    results.HEXsingleplex.export$Flag.positive.droplets<-ifelse(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
     results.HEXsingleplex.export$Flag.total.droplets<-ifelse(results.HEXsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.HEXsingleplex.export$Well<-row.names(results.HEXsingleplex.export)
     results.HEXsingleplex.export$Run<-run_ID
@@ -454,6 +458,8 @@ if(BCoVBRSVmultiplex>0){
     results.HEXsingleplex.export<-setDT(samples)[results.HEXsingleplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.HEXsingleplex.export))) 
     results.HEXsingleplex.export<-results.HEXsingleplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
+    results.HEXsingleplex.export$NeedRerun<-ifelse(results.HEXsingleplex.export$Flag.positive.droplets=="okay" & results.HEXsingleplex.export$Flag.total.droplets == "okay" & (results.HEXsingleplex.export$Flag.FAM_HEX.difference<4 | results.HEXsingleplex.export$Flag.FAM_HEX.difference=="okay") & results.HEXsingleplex.export$Comment == "", "", "need_rerun")
+    results.HEXsingleplex.export<-results.HEXsingleplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     
     write.table(results.HEXsingleplex.export, paste0("results_", singleplex_HEXassay, "_HEXsingleplex.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
     write.table(results.HEXsingleplex, paste0("results_details_", singleplex_HEXassay, "_HEXsingleplex.csv"), quote = FALSE, row.names = TRUE, col.names = TRUE, sep = ",")
