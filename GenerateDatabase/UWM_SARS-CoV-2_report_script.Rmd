@@ -100,8 +100,12 @@ file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=pas
 
 ### ddPCR data
 
+1. Only select samples that do not need to be re-run or that are controled samples (i.e., duplicate sample). 
+```{r}
+data.ddPCR<-subset(data.ddPCR, NeedRerun == "")
+```
 
-1. Attribute LOD and LOQ for each run \
+2. Attribute LOD and LOQ for each run \
 Here, we will consider that all data are N1 or N2 assays...\
 \
 We changed the quencher on the N2-HEX probe at the end of November 2020, which allowed to better distinguish the negative to the HEX-droplets. This change lead to a smaller LOD. \
@@ -139,23 +143,23 @@ data.ddPCR$N2.LOQ.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-
 
 
 
-2. Merge ddPCR and sample info data 
+3. Merge ddPCR and sample info data 
 ```{r}
 data.ddPCR.sinfo<-setDT(sample.info)[data.ddPCR, on="Sample_ID"]
 ```
 
 
 
-3. Select samples \
+4. Select samples \
 Select "real-time" samples collected in the 12 WWTPs monitored and processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI are discarded. Only samples not classified as "need rerun" or other labelling are considered. 
 ```{r}
-ddPCR.sinfo.realtime<-subset(data.ddPCR.sinfo, Sample_Type=="Real-time" & NeedRerun == "" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
+ddPCR.sinfo.realtime<-subset(data.ddPCR.sinfo, Sample_Type=="Real-time" & Concentration_Method=="HA filter" & Beads=="zymo" & Composite_Time =="24")
 ddPCR.sinfo.realtime<-subset(ddPCR.sinfo.realtime, City=="Brookfield"| City=="Burlington"| City=="Cedarburg"| City=="Green Bay_DP"| City=="Green Bay_PLT"| City=="Milwaukee_JI"| City=="Milwaukee_SS"| City=="Port Washington"| City=="Racine"| City=="South Milwaukee"| City=="Village of Grafton"| City=="Waukesha")
 ddPCR<-ddPCR.sinfo.realtime
 ```
 
 
-4. Calculate new fields:
+5. Calculate new fields:
 
   + ddPCR or RT-ddPCR reaction volume (uL)
 ```{r}
@@ -314,7 +318,7 @@ BRSV.sample.runinfo$inhibition<-ifelse(BRSV.sample.runinfo$ddPCR.GC.per.uL.rx.DF
 
 
   
-5. Split the data per assay (1 assay-info = 1 column)
+6. Split the data per assay (1 assay-info = 1 column)
 
   + BCoV 
 ```{r}
@@ -362,7 +366,7 @@ InhibitionDetected<-BRSV.sample.runinfo$inhibition
 ```
 
 
-6. Merge ddPCR data
+7. Merge ddPCR data
 ```{r}
 ddPCR.final<-cbind(ddPCR[,c("City", "Collection_Date_End", "Collection_Date_Start", "Target", "CV", "WWTPComments_for_CDC", "CDC_analytical_comment")], BCoV.log10.per.mL.sewage, BCoV, N1, N1.droplets.LOD, LOD.N1, LOQ.N1, N2, N2.droplets.LOD, LOD.N2, LOQ.N2, N1N2.run.date, N1.lo, N2.lo, N1.up, N2.up, N1N2.run.ID, N1N2.effective.volume.DF, PMMoV, InhibitionDetected)
 ```
