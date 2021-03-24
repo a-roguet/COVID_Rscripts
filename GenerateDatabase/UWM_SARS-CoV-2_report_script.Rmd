@@ -364,7 +364,7 @@ InhibitionDetected<-BRSV.sample.runinfo$inhibition
 
 6. Merge ddPCR data
 ```{r}
-ddPCR.final<-cbind(ddPCR[,c("City", "Collection_Date", "Collection_Date_Start", "Target", "CV", "WWTPComments_for_CDC", "CDC_analytical_comment")], BCoV.log10.per.mL.sewage, BCoV, N1, N1.droplets.LOD, LOD.N1, LOQ.N1, N2, N2.droplets.LOD, LOD.N2, LOQ.N2, N1N2.run.date, N1.lo, N2.lo, N1.up, N2.up, N1N2.run.ID, N1N2.effective.volume.DF, PMMoV, InhibitionDetected)
+ddPCR.final<-cbind(ddPCR[,c("City", "Collection_Date_End", "Collection_Date_Start", "Target", "CV", "WWTPComments_for_CDC", "CDC_analytical_comment")], BCoV.log10.per.mL.sewage, BCoV, N1, N1.droplets.LOD, LOD.N1, LOQ.N1, N2, N2.droplets.LOD, LOD.N2, LOQ.N2, N1N2.run.date, N1.lo, N2.lo, N1.up, N2.up, N1N2.run.ID, N1N2.effective.volume.DF, PMMoV, InhibitionDetected)
 ```
 
 
@@ -418,7 +418,7 @@ HF183<-HF183.qPCR.GC.per.L
 
 5. Merge all data
 ```{r}
-qPCR.final<-cbind(qPCR[,c("City", "Collection_Date", "Collection_Date_Start", "Target", "CV", "CDC_analytical_comment")], HF183)
+qPCR.final<-cbind(qPCR[,c("City", "Collection_Date_End", "Collection_Date_Start", "Target", "CV", "CDC_analytical_comment")], HF183)
 ```
 
 
@@ -690,7 +690,7 @@ if(isTRUE(nrow(variable.check.FALSE)>0)==TRUE){kable(variable.check.FALSE, forma
 ```{r echo=FALSE}
 ddPCR.qPCR.check<-matrix(NA, nrow = 23, ncol = 2)
 ddPCR.qPCR.check[1,]<-c("class(ddPCR.qPCR$City)=character", isTRUE(class(ddPCR.qPCR$City)=="character"))
-ddPCR.qPCR.check[2,]<-c("class(ddPCR.qPCR$Collection_Date)=character", isTRUE(class(ddPCR.qPCR$Collection_Date)=="character"))
+ddPCR.qPCR.check[2,]<-c("class(ddPCR.qPCR$Collection_Date_End)=character", isTRUE(class(ddPCR.qPCR$Collection_Date_End)=="character"))
 ddPCR.qPCR.check[3,]<-c("class(ddPCR.qPCR$Collection_Date_Start)=character", isTRUE(class(ddPCR.qPCR$Collection_Date_Start)=="character"))
 ddPCR.qPCR.check[4,]<-c("class(ddPCR.qPCR$Target)=character", isTRUE(class(ddPCR.qPCR$Target)=="character"))
 ddPCR.qPCR.check[5,]<-c("class(ddPCR.qPCR$CV)=character", isTRUE(class(ddPCR.qPCR$CV)=="character"))
