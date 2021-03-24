@@ -42,7 +42,7 @@ My OneDrive is synchronized on my local machine in the directory `~/OneDrive - U
 ### ddPCR and qPCR data
 ddPCR and qPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
-data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4,22))
+data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4:22))
 ```
 
 ddPCR and qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
