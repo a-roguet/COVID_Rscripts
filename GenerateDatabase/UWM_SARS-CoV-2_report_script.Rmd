@@ -40,21 +40,21 @@ current_time<-format(Sys.time(), '%y-%m-%d_%H%M')
 My OneDrive is synchronized on my local machine in the directory `~/OneDrive - UWM/'. It must not be the case for your computer. You will thus have to change slightly the path to access the files. 
 
 ### ddPCR and qPCR data
-ddPCR and qPCR data are stored in the tab "Raw data ddPCR" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+ddPCR and qPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
-data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Raw data", colNames = TRUE, startRow = 4)
+data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4,22))
 ```
 
-ddPCR and qPCR data are stored in the tab "Raw data qPCR" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+ddPCR and qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
-data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
+data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
 ```
 
 
 ### metadata
-Sample info are stored in the tab "Sample extraction" in the excel file "Experiment data summary in categories - Editable.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+Sample info are stored in the tab "Sample extraction" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
-sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
 ```
 
 Physico-chemical parameters are stored in the directory "WWTPs_parameters" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/WWTPs_parameters/.
@@ -87,7 +87,7 @@ file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rm
 rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="DatabaseCuration.Rmd")
 file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", rmd.sample.selection), overwrite = TRUE, copy.mode = TRUE)
 
-file.copy(from="~/OneDrive - UWM/SARS-CoV-2/Experiment data summary in categories - Editable.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/Experiment data summary in categories - Editable.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
 file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTP_Methods_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 ```
@@ -100,16 +100,14 @@ file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=pas
 
 ### ddPCR data
 
+
 1. Attribute LOD and LOQ for each run \
 Here, we will consider that all data are N1 or N2 assays...\
 \
 We changed the quencher on the N2-HEX probe at the end of November 2020, which allowed to better distinguish the negative to the HEX-droplets. This change lead to a smaller LOD. \
   + Determine the date the assays were ran
 ```{r}
-#date.assays.year<-as.data.frame(setDT(data.ddPCR)[, tstrsplit(Run, '[-]', type.convert=TRUE)])[,1]
-#date.assays.year<-ifelse(date.assays.year>=8, "-2020", "-2021")
 date.assays<-as.data.frame(setDT(data.ddPCR)[, tstrsplit(Run, '[ ]', type.convert=TRUE)])[,1]
-#date.assays<-paste0(date.assays, date.assays.year)
 date.assays<-as.Date(date.assays,format="%Y-%m-%d")
 data.ddPCR$run.date<-format(as.Date(date.assays), "%m/%d/%Y")
 ```
