@@ -201,6 +201,8 @@ Analyse_ddPCR_results <- function() {
     results.multiplex<-plateSummary(plate.cluster, cMethod="kmeansSdRain", ch1Label = "N1", ch2Label = "N2")
     results.multiplex$FAM.HEX.difference<-round(results.multiplex[,10]/results.multiplex[,11], digits = 2)
     results.multiplex$flag.FAM.HEX.difference<-ifelse(results.multiplex$FAM.HEX.difference>2,results.multiplex$FAM.HEX.difference, "okay")
+    results.multiplex$flag.FAM.HEX.difference[is.na(results.multiplex$flag.FAM.HEX.difference)] <- "okay"
+
     
     ## Split data to get 1 row = 1 assay
     results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18)]
@@ -296,7 +298,8 @@ if(BCoVBRSVmultiplex>0){
   results.multiplex<-plateSummary(plate.cluster, cMethod="Cluster", ch1Label = "BCoV", ch2Label = "BRSV")
   results.multiplex$FAM.HEX.difference<-round(results.multiplex[,10]/results.multiplex[,11], digits = 2)
   results.multiplex$flag.FAM.HEX.difference<-ifelse(results.multiplex$FAM.HEX.difference>2,results.multiplex$FAM.HEX.difference, "okay")
-  
+  results.multiplex$flag.FAM.HEX.difference[is.na(results.multiplex$flag.FAM.HEX.difference)] <- "okay"
+
   ## Split data to get 1 row = 1 assay
   results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18)]
   results.multiplex.FAM$Target<-"BCoV"
@@ -371,7 +374,7 @@ if(BCoVBRSVmultiplex>0){
     print("Compiling the output files...")
     singleplex_FAMassay<-as.character(target)
     results.FAMsingleplex<-plateSummary(plate.genuine.FAMsingleplex, cMethod="Cluster", ch1Label = singleplex_FAMassay, ch2Label = "NA")
-    
+
     ## Split data to get 1 row = 1 assay
     results.FAMsingleplex.export<-results.FAMsingleplex[, c(1,2,5,6,7,10,12)]
     names(results.FAMsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
@@ -387,7 +390,7 @@ if(BCoVBRSVmultiplex>0){
     results.FAMsingleplex.export<-setDT(samples)[results.FAMsingleplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.FAMsingleplex.export)))
     results.FAMsingleplex.export<-results.FAMsingleplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-    results.FAMsingleplex.export$NeedRerun<-ifelse(results.FAMsingleplex.export$Flag.positive.droplets=="okay" & results.FAMsingleplex.export$Flag.total.droplets == "okay" & (results.FAMsingleplex.export$Flag.FAM_HEX.difference<4 | results.FAMsingleplex.export$Flag.FAM_HEX.difference=="okay") & results.FAMsingleplex.export$Comment == "", "", "need_rerun")
+    results.FAMsingleplex.export$NeedRerun<-ifelse(results.FAMsingleplex.export$Flag.positive.droplets=="okay" & results.FAMsingleplex.export$Flag.total.droplets == "okay"  & results.FAMsingleplex.export$Comment == "", "", "need_rerun")
     results.FAMsingleplex.export<-results.FAMsingleplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     
     write.table(results.FAMsingleplex.export, paste0("results_", singleplex_FAMassay, "_FAMsingleplex.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
@@ -442,7 +445,7 @@ if(BCoVBRSVmultiplex>0){
     print("Compiling the output files...")
     singleplex_HEXassay<-as.character(target)
     results.HEXsingleplex<-plateSummary(plate.genuine.HEXsingleplex, cMethod="Cluster", ch1Label = "NA", ch2Label = singleplex_HEXassay)
-    
+
     ## Split data to get 1 row = 1 assay
     results.HEXsingleplex.export<-results.HEXsingleplex[, c(1,3,5,8,9,11,13)]
     names(results.HEXsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
@@ -458,7 +461,7 @@ if(BCoVBRSVmultiplex>0){
     results.HEXsingleplex.export<-setDT(samples)[results.HEXsingleplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.HEXsingleplex.export))) 
     results.HEXsingleplex.export<-results.HEXsingleplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-    results.HEXsingleplex.export$NeedRerun<-ifelse(results.HEXsingleplex.export$Flag.positive.droplets=="okay" & results.HEXsingleplex.export$Flag.total.droplets == "okay" & (results.HEXsingleplex.export$Flag.FAM_HEX.difference<4 | results.HEXsingleplex.export$Flag.FAM_HEX.difference=="okay") & results.HEXsingleplex.export$Comment == "", "", "need_rerun")
+    results.HEXsingleplex.export$NeedRerun<-ifelse(results.HEXsingleplex.export$Flag.positive.droplets=="okay" & results.HEXsingleplex.export$Flag.total.droplets == "okay" & results.HEXsingleplex.export$Comment == "", "", "need_rerun")
     results.HEXsingleplex.export<-results.HEXsingleplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     
     write.table(results.HEXsingleplex.export, paste0("results_", singleplex_HEXassay, "_HEXsingleplex.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
