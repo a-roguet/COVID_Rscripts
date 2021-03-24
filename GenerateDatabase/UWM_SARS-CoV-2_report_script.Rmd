@@ -33,6 +33,7 @@ library(pander)
 is.nan.data.frame <- function(x)
   do.call(cbind, lapply(x, is.nan))
 current_time<-format(Sys.time(), '%y-%m-%d_%H%M')
+'%!in%' <- function(x,y)!('%in%'(x,y)) 
 ```
 
 ***
@@ -102,7 +103,7 @@ file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=pas
 
 1. Only select samples that do not need to be re-run or that are controled samples (i.e., duplicate sample). 
 ```{r}
-data.ddPCR<-subset(data.ddPCR, NeedRerun == "")
+data.ddPCR<-subset(data.ddPCR, NeedRerun %!in% c("need_rerun", "duplicate"))
 ```
 
 2. Attribute LOD and LOQ for each run \
