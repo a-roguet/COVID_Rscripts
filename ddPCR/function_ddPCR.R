@@ -300,11 +300,11 @@ if(BCoVBRSVmultiplex>0){
   results.multiplex$Flag.FAM_HEX.difference<-""
 
   ## Split data to get 1 row = 1 assay
-  results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18,19)]
+  results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18)]
   results.multiplex.FAM$Target<-"BCoV"
   results.multiplex.FAM$DyeName<-"FAM"
   results.multiplex.FAM$Well<-row.names(results.multiplex.FAM)
-  results.multiplex.HEX<-results.multiplex[, c(1,3,5,8,9,11,13,18,19)]
+  results.multiplex.HEX<-results.multiplex[, c(1,3,5,8,9,11,13,18)]
   results.multiplex.HEX$Target<-"BRSV"
   results.multiplex.HEX$DyeName<-"HEX"
   results.multiplex.HEX$Well<-row.names(results.multiplex.HEX)
