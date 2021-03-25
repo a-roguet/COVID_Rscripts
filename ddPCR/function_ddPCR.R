@@ -297,15 +297,14 @@ if(BCoVBRSVmultiplex>0){
   print("Compiling the output files...")
   results.multiplex<-plateSummary(plate.cluster, cMethod="Cluster", ch1Label = "BCoV", ch2Label = "BRSV")
   results.multiplex$FAM.HEX.difference<-round(results.multiplex[,10]/results.multiplex[,11], digits = 2)
-  results.multiplex$flag.FAM.HEX.difference<-ifelse(results.multiplex$FAM.HEX.difference>2,results.multiplex$FAM.HEX.difference, "okay")
-  results.multiplex$flag.FAM.HEX.difference[is.na(results.multiplex$flag.FAM.HEX.difference)] <- "okay"
+  results.multiplex$Flag.FAM_HEX.difference<-""
 
   ## Split data to get 1 row = 1 assay
-  results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18)]
+  results.multiplex.FAM<-results.multiplex[, c(1,2,5,6,7,10,12,18,19)]
   results.multiplex.FAM$Target<-"BCoV"
   results.multiplex.FAM$DyeName<-"FAM"
   results.multiplex.FAM$Well<-row.names(results.multiplex.FAM)
-  results.multiplex.HEX<-results.multiplex[, c(1,3,5,8,9,11,13,18)]
+  results.multiplex.HEX<-results.multiplex[, c(1,3,5,8,9,11,13,18,19)]
   results.multiplex.HEX$Target<-"BRSV"
   results.multiplex.HEX$DyeName<-"HEX"
   results.multiplex.HEX$Well<-row.names(results.multiplex.HEX)
@@ -320,7 +319,7 @@ if(BCoVBRSVmultiplex>0){
   results.multiplex.export<-setDT(samples)[results.multiplex.export, on="Well"]
   #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.multiplex.export)))
   results.multiplex.export<-results.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-  results.multiplex.export$NeedRerun<-ifelse(results.multiplex.export$Flag.positive.droplets=="okay" & results.multiplex.export$Flag.total.droplets == "okay" & (results.multiplex.export$Flag.FAM_HEX.difference<4 | results.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.multiplex.export$Comment == "", "", "need_rerun")
+  results.multiplex.export$NeedRerun<-ifelse(results.multiplex.export$Flag.positive.droplets=="okay" & results.multiplex.export$Flag.total.droplets == "okay" & results.multiplex.export$Comment == "", "", "need_rerun")
   results.multiplex.export<-results.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
   
   ## Export the data ## 
