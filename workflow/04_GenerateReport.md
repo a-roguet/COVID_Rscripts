@@ -2,7 +2,11 @@
 
 Adelaide Roguet 3-5-21
 
-Congrats, you are almost done! This last workflow will guide to (i) generate the database compiling all ddPCR/qPCR and other metadata, (ii) curate automatically the data to only send the last changes to DHS/CDC, and (iii) upload the curated database on the DHS server.
+Congrats, you are almost done! This last workflow will guide to: 
+
+- Generate the database compiling all ddPCR/qPCR and other metadata, 
+- Curate automatically the data to only send the last changes to DHS/CDC, 
+- Upload the curated database on the DHS server.
 
 
 
@@ -44,14 +48,6 @@ In **CDC_DHS_reports** directory, the script generates a file named **UWM_SARS-C
 5. To avoid confusion, delete the **.Rmd** files that are still in the **CDC_DHS_reports** directory.
 
 
-
-At this step, the freshly created folder should contain:
-
-- 1x directory **RawData** that saves all the files used to generate the database
-- 1x file named **uwm_report_2021-03-05_1009.txt** containing the database from all samples collected and processed since August 31, 2020.
-- 1x file named **UWM_SARS-CoV-2_report_script.html** summarizing the script to generate the database as well as some quality controls, we will inspect shortly!
-- 1x file named **UWM_SARS-CoV-2_report_script.Rmd** to keep the raw .Rmd that has been used to generate the database (just in case).
-- 1x file named **DatabaseCuration.Rmd** that we will use shortly to curate the data before sending them to DHS/CDC.
 
 
 
@@ -103,29 +99,13 @@ The database we send to DHS should:
    - Path to the last database sent to DHS (Figure 3 #1)
    - Path to the database in the freshly created folder (Figure 3 #2)
    - Database number (based on the last database sent to DHS) (Figure 3 #3)
+   
+   
+   
+3. Knit the document (File > Knit Document)
 
 <iframe src="https://drive.google.com/file/d/1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo/preview" width="640" height="480"></iframe>
 **Figure 3.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
-
-
-
-
-3. Knit the document (File > Knit Document)
-
-
-
-The script will generate in the folder created previously:
-- 1x file containing the database that will be sent to DHS
-  
-> **uwm_report_** YEAR **-** MONTH **-** DAY **-** HOURMINUTE **_** REPORT# **.txt** 
-
-- 1x file listing the samples and the parameters for which updated values have been detected
-  
-> **uwm_report_** YEAR **-** MONTH **-** DAY **-** HOURMINUTE **_** REPORT# **_details_changes.txt** 
-
-- 1x file named **DatabaseCuration.html** summarizing the script to generate the database as well as some useful info we will inspect shortly!
-
-
 
 
 
@@ -142,40 +122,96 @@ The script will generate in the folder created previously:
 
 
 
+
+
+
+
 ## Send the database to the DHS server
 
 1. Copy and paste the last version of the curated database on the big-mac in the folder (a shortcut should be available in the Desktop):
    > HOME (genomics) > cdc_covid_report
 
    > If your database number is **27**, make sure the last database number is **26**. If not, you have to investigate...
+   
+   
 
 
 2. Open FileZilla (Figure 6).
 
-<iframe src="https://drive.google.com/file/d/1MBXRRVSdhafZ_FOdqdNtkPahCaPBpzR3/preview" width="640" height="480"></iframe>
-**Figure 6** 
-   
->The DHS server should be properly configured.
+   > The DHS server should be properly configured.
+
+
 
 3. Click on Server > Reconnect (Figure 7)
 
-<iframe src="https://drive.google.com/file/d/1O71UzqpnTQzABRbg0kiJUFUl4QHOTr3h/preview" width="640" height="480"></iframe>
-**Figure 7**
+
 
 4. Now that you are connected to the DHS server, make sure that you are in the right folder (Figure 8):
-   
-   >  DHFS > secure > DHS_Covid19 > UWM > PROD
 
-<iframe src="https://drive.google.com/file/d/1m5SshZ83YW7j03klZgUaAfVhRF3agxyo/preview" width="640" height="480"></iframe>
-**Figure 8**
+>  DHFS > secure > DHS_Covid19 > UWM > PROD
 
 5. On FileZilla, **right click** on the database you want to send, and click on **upload**
 
+   
+
 6. You should now see the file on the right side of the screen. Congrat, you just uploaded the database to the DHS server. 
 
+   
+
 7. Close FileZilla
+
+   
 
 8. Enjoy a cup of coffee or tea!
 
 
 
+<iframe src="https://drive.google.com/file/d/1MBXRRVSdhafZ_FOdqdNtkPahCaPBpzR3/preview" width="80" height="80"></iframe>
+
+**Figure 6** 
+
+
+
+<iframe src="https://drive.google.com/file/d/1O71UzqpnTQzABRbg0kiJUFUl4QHOTr3h/preview" width="640" height="480"></iframe>
+**Figure 7**
+
+
+
+<iframe src="https://drive.google.com/file/d/1m5SshZ83YW7j03klZgUaAfVhRF3agxyo/preview" width="640" height="480"></iframe>
+**Figure 8**
+
+
+
+
+
+
+
+---
+
+### Notes
+
+
+
+Outputs from **UWM_SARS-CoV-2_report_script.Rmd**: 
+
+- 1x directory **RawData** that saves all the files used to generate the database
+- 1x file named **uwm_report_2021-03-05_1009.txt** containing the database from all samples collected and processed since August 31, 2020.
+- 1x file named **UWM_SARS-CoV-2_report_script.html** summarizing the script to generate the database as well as some quality controls, we will inspect shortly!
+- 1x file named **UWM_SARS-CoV-2_report_script.Rmd** to keep the raw .Rmd that has been used to generate the database (just in case).
+- 1x file named **DatabaseCuration.Rmd** that we will use shortly to curate the data before sending them to DHS/CDC.
+
+
+
+
+
+Outputs from **DatabaseCuration.Rmd**:
+
+- 1x file containing the database that will be sent to DHS
+
+> **uwm_report_** YEAR **-** MONTH **-** DAY **-** HOURMINUTE **_** REPORT# **.txt** 
+
+- 1x file listing the samples and the parameters for which updated values have been detected
+
+> **uwm_report_** YEAR **-** MONTH **-** DAY **-** HOURMINUTE **_** REPORT# **_details_changes.txt** 
+
+- 1x file named **DatabaseCuration.html** summarizing the script to generate the database as well as some useful info we will inspect shortly!

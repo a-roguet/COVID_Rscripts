@@ -1,6 +1,16 @@
 # Process ddPCR data
 
-Adelaide Roguet 3-4-21
+Adelaide Roguet 3-25-21
+
+
+
+This workflow will show how to process the raw amplification and cluster data into concentrations and even more :-)
+
+It describes: 
+
+- How to download the last version of the scripts from Github
+- How to process and analyze ddPCR data using R markdown
+- The quality control step #1
 
 
 
@@ -8,23 +18,31 @@ Adelaide Roguet 3-4-21
 
 ## Before starting
 
-1. Make sure the data you are going to process are in a folder named as followed located in the directory:
-   > **Year** dash **Month** dash **Day** space **Target(s)**
-   > Good examples: 2021-2-23 N1N2 or 2020-12-3 N1N2
-   > Bad examples: 2021-02-23 N1N2 or 20-12-3
-   
+1. Make sure the ddPCR data you are about to process are in the shared **ddPCR data** OneDrive folder, and named as such:
    > SARS-CoV-2 > DATA > ddPCR data > YOUR RUN
+   
+   
+   
+   > **Year** dash **Month** dash **Day** space **Target(s)**
+> Good examples: 2021-2-23 N1N2 or 2020-12-3 N1N2
+   > Bad examples: 2021-02-23 N1N2 or 20-12-3
 
    
+
+2. If you ran a multiplex assay, make sure the .csv file (containing the metadata) exported BOTH **channel 1** AND **channel 2**. 
+   For N1/N2 multiplex, you should have for each well, one line describing **N1** information and another line describing **N2**. For BCoV/BRSV multiplex, you should have for each well, one line describing **BCoV** information and another line describing **BRSV**.
+
+   On Figure 1, the **good** file contains both N1, N2, BCoV and BRSV information. While the **bad** file only contains N1 and BCoV information (information related to N2 and BRSV are missing). If you observed such omission, just fix manually the .csv file (trying to re-export it from QuantaSoft never worked for me!). To do so (Figure 2), just copy and paste the green columns (the only ones read by R in the following step), and replace **N1** by **N2** and/or **BCoV** by **BRSV**. Done!
+
    
-2. Make sure the .csv file containing the sample metadata contains all channel info: It happens that QuantaSoft only exports the info related to channel 1 (Figure 1). So, if you run a multiplex, make sure you have both info for channel 1 **AND** channel 2. 
 
 <iframe src="https://drive.google.com/file/d/1RvvxP33mEIrKwd3_Z9zq0egzR2WFNX2F/preview" width="640" height="480"></iframe>
-   **Figure 1.** In green are the columns that will be read by R
+   **Figure 1.** Ecample of good and bad csv files for multiplex assays
 
-If you observed that channel 2 info is missing, just fix manually the .csv file (Figure 2).  sure the .csv file containing the sample metadata contains all channel info: It happens that QuantaSoft only exports the info related to channel 1 (Figure 1). So, if you run a multiplex, make sure you have both info from channels 1 and 2.
 
-<iframe src="https://drive.google.com/file/d/11yjpJErkST9qRgG1Acswl0FdppTpyTI4/preview" width="640" height="480"></iframe>
+
+<iframe src="https://drive.google.com/file/d/14obii2B3CSGcdNg0NGo5r6NqnM0wPhip/preview" width="640" height="480"></iframe>
+
    **Figure 2**
 
 
@@ -92,49 +110,115 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
 
 
-### Description of the output files
+
+
+## Quality control #1
+
+1. Make sure the number of processed samples per target match the number of samples expected.
+
+2. **FOR EACH SAMPLE**, visually check the **split between the positive and negative droplets** on 1D cluster plots for singleplex and the **correct cluster classification** on 2D cluster plots for multiplex assays. Something is incorrect, flag it (see point #5 below) (Figures 6, 7 and 8).
+
+   > BCoV/BRSV split is made by QuantaSoft. R is just reading BioRad's clusters. So, if the clusterization is wrong, don't blame Adelaide or the R package :-)
+
+3. **FOR EACH SAMPLE**, report any "weird pattern". Yes, flag it (see point #5 below) (Figure 9).
+
+   > It is most likely that weird patters are associated with too few accepted droplets (<10,000).
+
+   
+
+4. Check that **NTC are negatives** or below the limit of detection (3 droplets for N1 or N2). If not, then rerun the whole plate!
+
+   
+
+5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_[...].csv** file in the column **comment**
+
+
+
+
+<iframe src="https://drive.google.com/file/d/1w02PKbY4ddEvA94SvLBAS5optK5Gsidr/preview" width="640" height="480"></iframe>
+   **Figure 6** Example of **correct** splits for singleplex (a) and for multiplex (b).
+
+
+
+<iframe src="https://drive.google.com/file/d/1EZZibfUHtQTuteKYKisEphcwER_zHIY1/preview" width="640" height="480"></iframe>
+
+   **Figure 7** Example of **incorrect** spits for singleplex (a) and multiplex (b).
+
+
+
+<iframe src="https://drive.google.com/file/d/1wYFAaeqqdjMTa2mWGc-cxiu0t6Ws8l4k/preview" width="640" height="480"></iframe>
+
+​    **Figure 8** More example of **incorrect** spits for multiplexed assays.
+
+
+
+<iframe src="https://drive.google.com/file/d/1wYFAaeqqdjMTa2mWGc-cxiu0t6Ws8l4k/preview" width="640" height="480"></iframe>
+
+​    **Figure 9**  Example of **"weird patterns"** for multiplexed assays.
+
+
+
+
+
+
+
+
+
+
+
+----
+
+### Notes
+
+
+
+### Description of the R-ddPCR output files
 
 - **For singleplex assays:**
-   - **1x pdf figure per assay** displaying the 1D dye amplitude detected for each droplet. The x-axis shows each droplet randomly distributed from 0 to X, X being the total number of accepted droplets.
-     
-     > **singleplex_** TARGET **_** WELL **_** SAMPLE NAME **.pdf**
-     
-   - **1x csv file per dye** containing the run ID, sample names, target, concentration, etc.
-     
-     > **results_** TARGET **_** FAM/HEX **singleplex.csv**
-     
-   - **1x csv file per dye** containing detailed information than in the .csv file described above.
-     
-     > **results_details_** TARGET **_** FAM/HEX **singleplex.csv**
-     
-   - **1x RData file per dye** containing the R metadata of the plate (if you want to look in closer details to some values or want to change manually some values).
-     
-     > **plate_** TARGET **_** FAM/HEX **singleplex.RData**
+
+  - **1x pdf figure per assay** displaying the 1D dye amplitude detected for each droplet. The x-axis shows each droplet randomly distributed from 0 to X, X being the total number of accepted droplets.
+
+    > **singleplex_** TARGET **_** WELL **_** SAMPLE NAME **.pdf**
+
+  - **1x csv file per dye** containing the run ID, sample names, target, concentration, etc.
+
+    > **results_** TARGET **_** FAM/HEX **singleplex.csv**
+
+  - **1x csv file per dye** containing detailed information than in the .csv file described above.
+
+    > **results_details_** TARGET **_** FAM/HEX **singleplex.csv**
+
+  - **1x RData file per dye** containing the R metadata of the plate (if you want to look in closer details to some values or want to change manually some values).
+
+    > **plate_** TARGET **_** FAM/HEX **singleplex.RData**
 
 
 - **For multiplex assays:**
-  
-	- **3x pdf figures per assay** displaying:
+
+  - **3x pdf figures per assay** displaying:
+
     - 1D FAM amplitude detected for each droplet. 
-      
+
     > **singleplex_** TARGET **_** WELL **_** SAMPLE NAME **.pdf**
-    
+
     - 1D HEX amplitude detected for each droplet.
-      
+
   > **singleplex_** TARGET **_** WELL **_** SAMPLE NAME **.pdf**
-  
+
     - 2D FAM/HEX cluster plot. 
-      
+
   > **singleplex_** TARGET **_** WELL **_** SAMPLE NAME **.pdf**
-  
+
    - **1x csv file per dye**, containing the run ID, sample names, target, concentration, etc.
+
    > **results_** TARGETS **.csv**
-  
+
    - **1x csv file per dye** containing detailed information than in the .csv file described above.
+
    > **results_details_** TARGETS **.csv**
-  
+
    - **1x RData file per dye** containing the R metadata of the plate (if you want to look in closer details to some values or want to change manually some values).
-     
+
      > **plate_** TARGETS **.RData**
 
 
@@ -153,35 +237,13 @@ For more details, just look at the twoddPCR documentation
 
 
 
-## Quality control #1
-
-1. Visually, check the split between the positive and negative droplets on 1D cluster plots for singleplex and 2D cluster plots for multiplex assays. 
-
-   > A **correct** split looks like (Figure 6a) for singleplex and (Figure 6b) for multiplex.
-<iframe src="https://drive.google.com/file/d/1w02PKbY4ddEvA94SvLBAS5optK5Gsidr/preview" width="640" height="480"></iframe>
-   **Figure 6**
-
-   > An **incorrect** split looks like (Figure 7a) for singleplex and (Figure 7b) for multiplex.
-<iframe src="https://drive.google.com/file/d/1xTUHdWHFp161jCPChPLwl9IdR1rAco_y/preview" width="640" height="480"></iframe>
-   **Figure 7**
-
-
-
-2. Check that NTC are negatives or below the limit of detection (3 droplets for N1 or N2). If not, then rerun the whole plate!
-
-   
-
-3. Any weird pattern in the droplet cluster distribution? Yes, flag it (see point #4 below)
-
-   
-
-4. If any of the points above have been violated, or anything caught you eyes, report it in the **results_[...].csv** file in the column **comment**
 
 
 
 
 
 
+----
 
 ### Troubleshooting
 

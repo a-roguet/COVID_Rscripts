@@ -1,31 +1,40 @@
 # Deposit the data into the "big-spreadsheet"
 
-Adelaide Roguet 3-4-21
+Adelaide Roguet 3-25-21
 
-
-
-The "big-spreadsheet" is the excel spreadsheet called "Experiment data summary in categories - Editable.xlsx"
-   > SARS-CoV-2 > Experiment data summary in categories - Editable.xlsx
 
 
 If you are that far in the workflow, I assume that you processed the ddPCR data according to the "01_Process_ddPCR_data.html" workflow. Thus, you must have at least one **results_[...].csv** file (with comments in the column "comment" if needed). Yes? Perfect!
 
 
+This workflow will show how to deposit your processed ddPCR data in the "big-spreadsheet". The "big-spreadsheet" is the excel spreadsheet called "SARS-CoV-2_database_BigSpreadsheet.xlsx" in the shared SARS-CoV-2 directory.
+
+This workflow describes: 
+
+- How to locate and open the big-spreadsheet
+- How to paste your ddPCR data
+- The quality control step #2
+- How to notify the samples that need to be re-run
 
 
 
-## Get the "big-spreadsheet" ready
+
+
+
+
+## Open the good tab in the "big-spreadsheet" 
 
 1. Open the "big-spreadsheet" on your local Excel. Do not use your browser to open the file. Do not download the file on your computer.
+
+      > SARS-CoV-2 > SARS-CoV-2_database_BigSpreadsheet.xlsx
+
+
+
 <iframe src="https://drive.google.com/file/d/1DZyBveVDkwMYWkSn6rhut9CsbcRiliaE/preview" width="640" height="480"></iframe>
+
    **Figure 1**
 
-2. Open the tab **Raw data**
-
-
-3. Make sure all filters are "unselected" and the 1st column is sorted alphabetically from A to Z. 
-
-
+2. Open the tab **Raw data ddPCR**
 
 
 
@@ -33,58 +42,62 @@ If you are that far in the workflow, I assume that you processed the ddPCR data 
 
 ## Import ddPCR data into the "big-spreadsheet"
 
-1. In **results_[...].csv** file, select rows except the header
+1. In **results_[...].csv** file, **copy** all the table, except the header
    
-   > R generated one file per singleplex/multiplex. So, if you ran on the same plate N1/N2 and BCoV/BRSV assays, you have 2 results files, one for N1/N2 and 1 for BCoV/BRSV. You will have to import both of them in the "big-spreadsheet".
-
-
-2. Copy and paste the table (i.e., the processed ddPCR data) in the location shown in Figure 2 #1. The data should visually fit nicely with the data above. 
-
-
-3. Drag the content of the dark grey cells (Figure 2 #2)
+   > R generated one file per singleplex/multiplex. So, if you ran on the same plate N1/N2 and BCoV/BRSV assays, you have to import **TWO** files in the big-spreadsheet, 1x for N1/N2 and 1x for BCoV/BRSV.
    
-> Dark grey columns mirror the last 4 columns of the **results_[...].csv** file, with a conditional formatting to highlight the cells that are not "okay"
-
-4. Fill the **Sample_ID** column. Drag the cells that contain a vlookup function (Figure 2 #3). Make when you drag/paste the function that the formula has not shifted from 1 line or 2, i.e., if you are in row 1201, that the vlookup is looking for the cell O1201, not O1200 or 1203!
-   > The vlookup function reads the column "Sample" and attributes the full name of the filter by looking at the tab **Sample extraction**. The R-script will look at that specific column to merge the ddPCR data and the sample info.
-   > Why we are not only using the CV and the letter (e.g., 856H1) for the R-script - that is a good question! Back in summer 2020, it was the way Shuchen and I were processing the samples. It is a fossil of the past...
+   
 
 
-5. Drag the numbers # (Figure 2 #4)
+2. **Paste-special > values** the table in the location shown in Figure 2 #1. The data should visually fit nicely with the data above. 
 
 
-6. Enter the dilution factor (Figure 2 #5)
-   > 1 = not diluted (mostly used for N1, N2, BCoV, and BRSV assays)
-   > 10 = 1/10 diluted (mostly used for PMMoV assay)
 
-7. Drag the content of the light grey cells (Figure 2 #6)
-   > These columns allow visualizing if the vlookup (Figure 2 #3) worked well, the type of sample, WWTP, and CV number should match your sample. 
 
-   > If **#N/A** pops in these columns, this means that the value in the column **Sample_ID** was not detected in the tab **Sample Extraction**. The vlookup function looks for the exact match between the template and the query. For example, for PMMoV, "1:10" is generally added to the column O (i.e., "Sample"). In this context, the lookup won't work. You will have to edit the cells in column O to remove the extra " 1:10".
-   >
-   > R will look at the column **Sample_ID** to merge ddPCR data and some other metadata, so if the light grey column cannot match any sample info to **Sample_ID**, R won't be able to do it too!!
+3. Enter the dilution factor (Figure 2 #2)
+   
+> 1 = not diluted (mostly used for N1, N2, BCoV, and BRSV assays)
+> 10 = 1/10 diluted (mostly used for PMMoV assay)
 
-<iframe src="https://drive.google.com/file/d/1nVIjp7TB-xvFknOl_qwC4O5nnOa3UiJz/preview" width="640" height="480"></iframe>
+
+
+4. Make sure sample ID in column **Sample_ID** (column M) are correct (Figure 2 #3):
+   
+   - All NTC have to be called **NTC** not NTC_BCoV or something (R will look for the exact term "NTC")
+   
+   - All "BRSV only" have to be called **ref**, not Ref or reference or something (it is for R again!)
+   
+    - Do not add extra caracters such as "1:10" or spaces after the sample name.
+   
+
+To make sure the sample ID is correct, you can look at the column B and C, if they display #N/A, then your sample ID is not recognized. If the City and the date is correctly displayed, then you are golden! 
+
+
+
+5. You can leave comments in the "CDC_analytical_comment" (column E) to leave an analytical  comment in the database sent to DHS/CDC
+
+
+
+<iframe src="https://drive.google.com/file/d/1Lp-7aAXwt8sIIbtmyBL1iY_7-0BGrQmO/preview" width="640" height="480"></iframe>
+
    **Figure 2**
 
 
 
-8. What you have to name manually in Sample_ID column:
-   - All NTC have to be called **NTC** not NTC_BCoV or something (R will look for the exact term "NTC")
-   - All "BRSV only" have to be called **ref**, not Ref or reference or something (it is for R again!)
 
 
 
+
+ 	
 
 
 ## Quality control #2
 
-1. Among the dark grey columns, if any cell turns red (we allow a ratio FAM/HEX < 4), in the **Sample_ID** column, add at the end of name **"need rerun"** (Figure 3).
+1. Among the dark grey columns, if any cell turned red among the columns "Positive/Accepted droplet ratio" (column F), "Total droplets" (column G), "FAM/HEX ratio" (column H; we allow a ratio FAM/HEX < 4 ), the column "NeedRerun" should displays "need_rerun". However, if you manually added "weird pattern" in the column "Comment" (column I), then you have to add **"need_rerun"** in the "NeedRerun" column (column J).
 
-<iframe src="https://drive.google.com/file/d/1t3Y1jJv3izB8sq_fYVa53jVtojkb494c/preview" width="640" height="480"></iframe>
-      **Figure 3**
+> For any other reasons (e.g., during downstream analysis) a sample has to be "removed" to avoid being processed and send to DHS/CDC, then just add **"need_rerun"** in the "NeedRerun" column (column J).
 
-> For any other reasons (e.g., during downstream analysis) a sample has to be "removed" to avoid being processed and send to DHS/CDC, then just add "need rerun" and R will ignore it. 
+
 
 2. Check that all NTCs are negative or below the limit of detection (3 droplets for N1 and N2). If not, flag it!
 
@@ -92,13 +105,16 @@ If you are that far in the workflow, I assume that you processed the ddPCR data 
 
    
 
-3. For N1/N2: 
-
+3. **For N1/N2:**
    - Check the number of positive droplets for the standards 1:8. It should be ~100 droplets. No? Ask the person who did the plate if something could explain the high/low droplet number. If nothing can explain it, flag it!
-   - Check the concentration observed in the dupicate sample is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" at the end of **Sample_ID** to discard that data. In that context, more is better. 
+   - Check the concentration observed in the dupicate sample is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" in the "NeedRerun" column. But if you want to ignore that sample for that specific reason, add "duplicate" in the "NeedRerun" column
      
 
-   For BCoV/BRSV: Check that the concentration in the **BRSV only** wells are about the same.
+   **For BCoV/BRSV:**
+   
+   - Check that the concentration in the **BRSV only** wells are about the same.
+
+
 
 
 

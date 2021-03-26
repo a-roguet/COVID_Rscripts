@@ -1,10 +1,14 @@
 # Compile the WWTP parameters
 
-Adelaide Roguet 3-5-21
+Adelaide Roguet 3-24-21
 
 The WWTPs parameters are as important as the ddPCR data. Thus, it is important to keep that database as up-to-date as possible. To make the compilation step as smooth as possible, all WWTPs can enter their data directly on online excel spreadsheets. Some WWTPs only fill the paper sheet that is sent along with the sample.
 
 These data will be merged to the ddPCR data using the CV number. Thus that value HAS to be accurate. All data will be reported to DHS/CDC, except the beginning and end of the sampling collection (the info is provided by the "Sample extraction" tab of the big-spreadsheet).
+
+This workflow will show you how to update and curate of the WWTP parameters.
+
+
 
 
 
@@ -22,7 +26,11 @@ This folder contains:
 
 
 
-## Updates and manual curation
+
+
+
+
+## Update and curate
 
 
 
