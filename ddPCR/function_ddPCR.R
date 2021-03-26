@@ -216,7 +216,7 @@ Analyse_ddPCR_results <- function() {
     
     results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
     names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
-    results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
+    results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
     results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.multiplex.export$Run<-run_ID
     results.multiplex.export$Comment<-""
@@ -311,7 +311,7 @@ if(BCoVBRSVmultiplex>0){
   
   results.multiplex.export<-rbind(results.multiplex.FAM,setnames(results.multiplex.HEX,names(results.multiplex.FAM)))
   names(results.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
-  results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
+  results.multiplex.export$Flag.positive.droplets<-ifelse(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.multiplex.export$PositivesDroplets/results.multiplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
   results.multiplex.export$Flag.total.droplets<-ifelse(results.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
   results.multiplex.export$Run<-run_ID
   results.multiplex.export$Comment<-""
@@ -378,7 +378,7 @@ if(BCoVBRSVmultiplex>0){
     results.FAMsingleplex.export<-results.FAMsingleplex[, c(1,2,5,6,7,10,12)]
     names(results.FAMsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.FAMsingleplex.export$Target<-singleplex_FAMassay
-    results.FAMsingleplex.export$Flag.positive.droplets<-ifelse(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
+    results.FAMsingleplex.export$Flag.positive.droplets<-ifelse(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.FAMsingleplex.export$PositivesDroplets/results.FAMsingleplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
     results.FAMsingleplex.export$Flag.total.droplets<-ifelse(results.FAMsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.FAMsingleplex.export$Well<-row.names(results.FAMsingleplex.export)
     results.FAMsingleplex.export$Run<-run_ID
@@ -449,7 +449,7 @@ if(BCoVBRSVmultiplex>0){
     results.HEXsingleplex.export<-results.HEXsingleplex[, c(1,3,5,8,9,11,13)]
     names(results.HEXsingleplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell")
     results.HEXsingleplex.export$Target<-singleplex_HEXassay
-    results.HEXsingleplex.export$Flag.positive.droplets<-ifelse(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets, digits = 0), ")"), "okay")
+    results.HEXsingleplex.export$Flag.positive.droplets<-ifelse(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.HEXsingleplex.export$PositivesDroplets/results.HEXsingleplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
     results.HEXsingleplex.export$Flag.total.droplets<-ifelse(results.HEXsingleplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.HEXsingleplex.export$Well<-row.names(results.HEXsingleplex.export)
     results.HEXsingleplex.export$Run<-run_ID
