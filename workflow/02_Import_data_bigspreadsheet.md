@@ -78,7 +78,7 @@ To make sure the sample ID is correct, you can look at the column B and C, if th
 
 
 
-<iframe src="https://drive.google.com/file/d/1Lp-7aAXwt8sIIbtmyBL1iY_7-0BGrQmO/preview" width="640" height="480"></iframe>
+<iframe src="https://drive.google.com/file/d/1UU68NxTdTP0rikk9sNkibpcVc4FzTtQA/preview" width="640" height="480"></iframe>
 
    **Figure 2**
 

@@ -134,3 +134,10 @@ QuantaSoft exports one file per reaction. All files contain 3 columns:
 8. Done!
 ```
 
+
+
+- **I got an error while reading the plate.**
+
+Click on **continue** AND inform Angie that something happened (write down the error number).
+
+<iframe src="https://drive.google.com/file/d/10SH9qsgNUPkMo07TFcAsuUWw4E3xwu9s/preview" width="640" height="480"></iframe>
