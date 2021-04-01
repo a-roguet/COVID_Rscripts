@@ -130,7 +130,7 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
    
 
-5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_[...].csv** file in the column **comment**
+5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_final.csv** file in the column **comment**
 
 
 
@@ -174,6 +174,12 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
 ### Description of the R-ddPCR output files
 
+- **Per plate**:
+
+  - **1x csv file per plate** compiling all the results of all assays performed on the plate
+
+    > **results_final.csv**
+
 - **For singleplex assays:**
 
   - **1x pdf figure per assay** displaying the 1D dye amplitude detected for each droplet. The x-axis shows each droplet randomly distributed from 0 to X, X being the total number of accepted droplets.
@@ -186,7 +192,7 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
   - **1x csv file per dye** containing detailed information than in the .csv file described above.
 
-    > **results_details_** TARGET **_** FAM/HEX **singleplex.csv**
+    > **details_results_** TARGET **_** FAM/HEX **singleplex.csv**
 
   - **1x RData file per dye** containing the R metadata of the plate (if you want to look in closer details to some values or want to change manually some values).
 

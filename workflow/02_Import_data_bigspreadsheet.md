@@ -42,9 +42,7 @@ This workflow describes:
 
 ## Import ddPCR data into the "big-spreadsheet"
 
-1. In **results_[...].csv** file, **copy** all the table, except the header
-   
-   > R generated one file per singleplex/multiplex. So, if you ran on the same plate N1/N2 and BCoV/BRSV assays, you have to import **TWO** files in the big-spreadsheet, 1x for N1/N2 and 1x for BCoV/BRSV.
+1. Open **results_final.csv** file, **copy** all the table, except the header
    
    
 
