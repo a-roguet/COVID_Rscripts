@@ -66,8 +66,8 @@ In **CDC_DHS_reports** directory, the script generates a file named **UWM_SARS-C
 **Figure 2**
 
 7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. Flag the samples that look like outliers:
-- Open **RawData** tab in the big spreadsheet
-- Add **"need rerun"** at the end of Sample_ID of the sample you want to discard
+- Open **RawData ddPCR** tab in the big spreadsheet
+- Add **"need_rerun"** to the column **NeedRerun**
 - Delete the folder that has been freshly created
 - Restart this workflow from the beginning
 
