@@ -1,4 +1,4 @@
-This worflow is divided in 4 steps from the transfer of the ddPCR from the GLGC to the OneDrive SARS-CoV-2 folder to the submission of the database to the CDC. 
+This worflow is divided in 5 steps from the transfer of the ddPCR from the GLGC to the OneDrive SARS-CoV-2 folder to the submission of the database to the CDC. 
 
 - ddPCR raw data transfer from the GLGC's computer to the SARS-CoV-2 folder located on OneDrive
 - Process ddPCR raw data to obtain the target concentration per microliter of reaction and other information
