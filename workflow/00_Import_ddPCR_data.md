@@ -1,4 +1,4 @@
-# Export ddPCR data
+# Import ddPCR data
 
 Adelaide Roguet 3-25-21
 
@@ -27,7 +27,8 @@ It describes:
 			- Select the run folder
 			- Double click on the only file that appears in the folder
 
-<iframe src="https://drive.google.com/file/d/1Q6AX0KW4F3YN9VJN3Ng0pRqzZiAzeK_m/preview" width="640" height="480"></iframe>
+<iframe src="https://drive.google.com/file/d/1aFtqpb4fox1oT-N0GN-x0psOtFvbJM-a/preview" width="640" height="480"></iframe>
+
    **Figure 1**
 
 
@@ -51,8 +52,8 @@ It describes:
 7. While in the QuantaSoft dialog window: Create a folder on your USB key to store the ddPCR amplification data. The folder has to be named as followed:
 
    > **Year** dash **Month** dash **Day** space **Target(s)**
-   > Good examples: 2021-2-23 N1N2 or 2020-12-3 N1N2
-   > Bad examples: 2021-02-23 N1N2 or 20-12-3
+   > Good examples: 2021-2-9 N1N2 or 2020-12-3 N1N2
+   > Bad examples: 2021-02-09 N1N2 or 20-12-3
 
    
 

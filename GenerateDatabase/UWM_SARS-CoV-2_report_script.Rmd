@@ -146,6 +146,12 @@ data.ddPCR$N2.LOQ.droplet.threshold<-ifelse(data.ddPCR$LOD.LOQ.info=="before_11-
 
 
 3. Merge ddPCR and sample info data 
+
+Create the "Sample_ID" variable
+```{r}
+sample.info$Sample_ID<-paste0(sample.info$CV, sample.info$Filter_ID)
+```
+Merge both datasets
 ```{r}
 data.ddPCR.sinfo<-setDT(sample.info)[data.ddPCR, on="Sample_ID"]
 ```
