@@ -32,8 +32,6 @@ It describes:
 
          
 
-    <a href="https://drive.google.com/uc?export=view&id=1aFtqpb4fox1oT-N0GN-x0psOtFvbJM-a"><img src="https://drive.google.com/uc?export=view&id=1aFtqpb4fox1oT-N0GN-x0psOtFvbJM-a" style="width: 65px; max-width: 100%; height: auto" title="Click to enlarge picture" />
-
 <iframe src="https://drive.google.com/file/d/1aFtqpb4fox1oT-N0GN-x0psOtFvbJM-a/preview" width="640" height="480"></iframe>
 
    **Figure 1**
