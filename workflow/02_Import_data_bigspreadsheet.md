@@ -76,7 +76,7 @@ To make sure the sample ID is correct, you can look at the column B and C, if th
 
 
 
-<iframe src="https://drive.google.com/file/d/1UU68NxTdTP0rikk9sNkibpcVc4FzTtQA/preview" width="640" height="480"></iframe>
+<iframe src="https://drive.google.com/file/d/1Lp-7aAXwt8sIIbtmyBL1iY_7-0BGrQmO/preview" width="640" height="480"></iframe>
 
    **Figure 2**
 
@@ -97,7 +97,7 @@ To make sure the sample ID is correct, you can look at the column B and C, if th
 
 
 
-2. Check that all NTCs are negative or below the limit of detection (3 droplets for N1 and N2). If not, flag it!
+2. Check that all NTCs are negative or below the limit of detection (2 droplets max for N1 and N2). If not, flag it!
 
    >  You should have spotted that issue during the quality control #1. Because if the NTCs are positive, then you should not have gone that far away in the workflow!
 
@@ -105,7 +105,7 @@ To make sure the sample ID is correct, you can look at the column B and C, if th
 
 3. **For N1/N2:**
    - Check the number of positive droplets for the standards 1:8. It should be ~100 droplets. No? Ask the person who did the plate if something could explain the high/low droplet number. If nothing can explain it, flag it!
-   - Check the concentration observed in the dupicate sample is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" in the "NeedRerun" column. But if you want to ignore that sample for that specific reason, add "duplicate" in the "NeedRerun" column
+   - Check the concentration observed in the dupicate sample (if any) is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" in the "NeedRerun" column. But if you want to ignore that sample for that specific reason, add "duplicate" in the "NeedRerun" column
      
 
    **For BCoV/BRSV:**

@@ -57,15 +57,15 @@ In **CDC_DHS_reports** directory, the script generates a file named **UWM_SARS-C
 
 1. Open the file **UWM_SARS-CoV-2_report_script.html** in the freshly created folder
 2. Go to the section **Checking section**
-3. Check the WWTP parameters input by looking at the table below ```pander(head(metadata.parameter))```. Make sure it does not contains anomalies.
-4. Check the variables classes in the WWTP parameters by looking below ```lapply(metadata.parameter,class)```. Parameters should be classified as "numeric". If not, make sure it didn't affect the workflow and that everything looks good in the final database.
-5. Check the database output by looking at the table below ```pander(head(report))```. Make sure it does not contains anomalies.
-6. Check that all variable classes are okay (Figure 2). If something is wrong, then it should be explicit.
+3. Check the WWTP parameters input by looking at the table below **```pander(head(metadata.parameter))```**. Make sure it does not contains anomalies.
+4. Check the variables classes in the WWTP parameters by looking below **```lapply(metadata.parameter,class)```**. Parameters should be classified as "numeric". If not, make sure it didn't affect the workflow and that everything looks good in the final database.
+5. Check the database output by looking at the table below **```pander(head(report))```**. It displays the last samples entered in the database. Make sure it does not contains anomalies, e.g., NA for BCoV, while you know BCoV should be in there, etc..
+6. Check that all variable classes are **okay** (Figure 2). If something is wrong, then it should be (kinda) explicit.
 
 <iframe src="https://drive.google.com/file/d/1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr/preview" width="640" height="480"></iframe>
 **Figure 2**
 
-7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. Flag the samples that look like outliers:
+7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. If any, flag samples that look like outliers:
 - Open **RawData ddPCR** tab in the big spreadsheet
 - Add **"need_rerun"** to the column **NeedRerun**
 - Delete the folder that has been freshly created
@@ -95,16 +95,17 @@ The database we send to DHS should:
 
    
 
-2. Set up some parameters, add: 
-   - Path to the last database sent to DHS (Figure 3 #1)
-   - Path to the database in the freshly created folder (Figure 3 #2)
+2. Set up parameters, for that, add: 
+   - Path to the last database sent to CDC/DHS (Figure 3 #1). You only need to add the folder name. 
+   - Path to the database you just created in the steps above (Figure 3 #2). You only need to add the folder name. 
    - Database number (based on the last database sent to DHS) (Figure 3 #3)
    
    
    
 3. Knit the document (File > Knit Document)
 
-<iframe src="https://drive.google.com/file/d/1eaTUNhb3yTxFsN9sUrHAr1edFb4sLtpo/preview" width="640" height="480"></iframe>
+<iframe src="https://drive.google.com/file/d/1izRcWi1_3-ZBgKia2_8ONhjyJHjpQNjC/preview" width="640" height="480"></iframe>
+
 **Figure 3.** In that specific example, the number in the folder **21-3-01_10:30** was **26**
 
 

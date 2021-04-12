@@ -120,7 +120,7 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
    > BCoV/BRSV split is made by QuantaSoft. R is just reading BioRad's clusters. So, if the clusterization is wrong, don't blame Adelaide or the R package :-)
 
-3. **FOR EACH SAMPLE**, report any "weird pattern". Yes, flag it (see point #5 below) (Figure 9).
+3. **FOR EACH SAMPLE**, report any "weird pattern" (see point #5 below) (Figure 9).
 
    > It is most likely that weird patters are associated with too few accepted droplets (<10,000).
 
@@ -130,7 +130,7 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
    
 
-5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_final.csv** file in the column **comment**
+5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_final.csv** file in the column **comment** and add **"need_rerun"** in the column **NeedRerun**. FOR MULTIPLEX ASSAYS, **do not forget** to report for both N1 and N2, or BCoV and BRSV (Figure 10). 
 
 
 
@@ -157,6 +157,14 @@ Once the script has been run, RStudio should open an html file. You can open tha
 ​    **Figure 9**  Example of **"weird patterns"** for multiplexed assays.
 
 
+
+
+
+
+
+<iframe src="https://drive.google.com/file/d/1QrKk-ac0t08CsgrGhrYkA5z0DVbHEg7_/preview" width="640" height="480"></iframe>
+
+​    **Figure 10**  Example of a sample (N1/N2 assay) that has been manually flagged as "weird patterns"
 
 
 

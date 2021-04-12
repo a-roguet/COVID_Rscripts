@@ -27,15 +27,15 @@ library(dplyr)
 
 Indicate the name of the last report uploaded on the DHS/CDC server
 ```{r}
-name.last.CDCDHS.report<-"XXXXXX/XXXXXX"
-last.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.last.CDCDHS.report, ".txt"), h=T, sep = "|")
+foldername.last.CDCDHS.report.sent<-"XXXXXX"
+last.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.last.CDCDHS.report.sent, "/uwm_report_20", foldername.last.CDCDHS.report.sent, ".txt"), h=T, sep = "|")
 ```
 
 Indicate the name of the freshly generated report and the number of the new report
 ```{r}
-name.fresh.report<-"XXXXXX/XXXXXX"
+foldername.report.just.generated<-"XXXXXX"
 number.new.report<-XXXXXX
-new.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, ".txt"), h=T, sep = "|")
+new.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, ".txt"), h=T, sep = "|")
 ```
 
 
@@ -131,7 +131,7 @@ names(comparison.cv.changes)[1]<-"CV"
 
 Export data
 ```{r}
-write.table(new.report.final, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, "_", number.new.report, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
+write.table(new.report.final, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, "_", number.new.report, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
 
-write.table(comparison.cv.changes, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", name.fresh.report, "_details_changes.txt"), row.names = FALSE, quote = FALSE, sep = "\t", na = "", col.names = TRUE)
+write.table(comparison.cv.changes, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, "_details_changes.txt"), row.names = FALSE, quote = FALSE, sep = "\t", na = "", col.names = TRUE)
 ```
