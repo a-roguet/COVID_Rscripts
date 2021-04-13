@@ -36,19 +36,6 @@ Analyse_ddPCR_results <- function() {
   # four.clusters<-articificial.sample.plate[["A01"]]
   # dropletPlot(four.clusters)
   # saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
-  four.clusters.genuine<-readRDS(here(working_directory, run_ID,"four_clusters_iowa.RData"))
-  
-  ## Get the center of the negative droplets
-  four.clusters.genuine.NN <- four.clusters.genuine@dropletAmplitudes[which(four.clusters.genuine@classification$Cluster == "NN"),]
-  four.clusters.genuine.NN.Ch1<-mean(four.clusters.genuine.NN$Ch1.Amplitude) #1198.864
-  four.clusters.genuine.NN.Ch2<-mean(four.clusters.genuine.NN$Ch2.Amplitude) #1996.125
-  
-  ## Get the centers of the 4 clusters
-  #four.clusters.genuine.NN <- kmeansClassify(four.clusters.genuine.NN, centres=4)
-  #dropletPlot(four.clusters.genuine, cMethod="Cluster")
-  #clusterCentres(four.clusters.genuine.NN, cMethod="kmeans")  
-  
-  
   
   
   ### N1/N2 SLUDGE ###
@@ -60,17 +47,45 @@ Analyse_ddPCR_results <- function() {
   #four.clusters<-articificial.sample.plate[["A01"]]
   #dropletPlot(four.clusters, cMethod="Cluster")
   #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa_sludge.RData")
-  four.clusters.sludge.genuine<-readRDS(here(working_directory, run_ID,"four_clusters_iowa_sludge.RData"))
+ 
   
-  ## Get the center of the negative droplets
+  ### BioRad variants ###
+  ## Import data
+  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  #articificial.sample.plate <- ddpcrPlate(well=".")
+  
+  ## Select the info from the unique well (A01)
+  #four.clusters<-articificial.sample.plate[["A01"]]
+  #dropletPlot(four.clusters, cMethod="Cluster")
+  #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_variant.RData")
+
+  
+  ### Merge all .RData ###
+  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  #four.clusters.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
+  #four.clusters.sludge.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa_sludge.RData")
+  #four.clusters.variant.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_variant.RData")
+  #save(four.clusters.genuine, four.clusters.sludge.genuine, four.clusters.variant.genuine, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_ALL.RData")
+
+  
+   ### Load .RData ###
+  
+  load(here(working_directory, run_ID,"four_clusters_ALL.RData"))
+  
+  ## N1/N2 - Get the center of the negative droplets
+  four.clusters.genuine.NN <- four.clusters.genuine@dropletAmplitudes[which(four.clusters.genuine@classification$Cluster == "NN"),]
+  four.clusters.genuine.NN.Ch1<-mean(four.clusters.genuine.NN$Ch1.Amplitude) #1198.864
+  four.clusters.genuine.NN.Ch2<-mean(four.clusters.genuine.NN$Ch2.Amplitude) #1996.125
+  
+  ## N1/N2 sludge - Get the center of the negative droplets
   four.clusters.sludge.genuine.NN <- four.clusters.sludge.genuine@dropletAmplitudes[which(four.clusters.sludge.genuine@classification$Cluster == "NN"),]
   four.clusters.sludge.genuine.NN.Ch1<-mean(four.clusters.sludge.genuine.NN$Ch1.Amplitude) #1398.864
   four.clusters.sludge.genuine.NN.Ch2<-mean(four.clusters.sludge.genuine.NN$Ch2.Amplitude) #1596.125
   
-  ## Get the centers of the 4 clusters
-  #clusterCentres(four.clusters.sludge.genuine, cMethod="Cluster")  
-  #dropletPlot(four.clusters.sludge.genuine, cMethod="kmeans")  
-  
+  ## Variant - Get the center of the negative droplets
+  four.clusters.variant.genuine.NN <- four.clusters.variant.genuine@dropletAmplitudes[which(four.clusters.variant.genuine@classification$Cluster == "NN"),]
+  four.clusters.variant.genuine.NN.Ch1<-mean(four.clusters.variant.genuine.NN$Ch1.Amplitude) 
+  four.clusters.variant.genuine.NN.Ch2<-mean(four.clusters.variant.genuine.NN$Ch2.Amplitude) 
   
   
   
@@ -93,13 +108,13 @@ Analyse_ddPCR_results <- function() {
   samples$target<-str_replace(samples$target, "PMMOV", "PMMoV")
   
   ## Create temporary folders and copy raw files in them
-  dir.create("temp_all_files"); dir.create("temp_N1N2multiplex"); dir.create("temp_N1N2sludgemultiplex"); dir.create("temp_BCOVBRSVmultiplex"); dir.create("temp_FAMsingleplex"); dir.create("temp_HEXsingleplex")
+  dir.create("temp_all_files"); dir.create("temp_N1N2multiplex"); dir.create("temp_N1N2sludgemultiplex"); dir.create("temp_BCOVBRSVmultiplex"); dir.create("temp_FAMsingleplex"); dir.create("temp_HEXsingleplex"); dir.create("temp_variantsmultiplex")
   dataRawFiles <- dir(".", "*_Amplitude.csv", ignore.case = TRUE, all.files = TRUE)
   file.copy(dataRawFiles, "./temp_all_files", overwrite = TRUE)
   
   ## Split the files between singleplex, N1/N2 multiplex, N1/N2 sludge multiplex and BCoV/BRSV multiplex
   dataTempFiles <- dir("./temp_all_files/", "*.csv", ignore.case = TRUE, all.files = TRUE)
-  FAMsingleplex=HEXsingleplex=N1N2multiplex=N1N2Sludgemultiplex=BCoVBRSVmultiplex=0
+  FAMsingleplex=HEXsingleplex=N1N2multiplex=N1N2Sludgemultiplex=BCoVBRSVmultiplex=variantmultiplex=0
   
   for(j in 1:length(dataTempFiles)) {
     fileTemp<-dataTempFiles[j]
@@ -124,11 +139,14 @@ Analyse_ddPCR_results <- function() {
         } else if(grepl("BCoV_BRSV", samples[which(samples$Well == wellTemp), c("target")], fixed = TRUE)){
           BCoVBRSVmultiplex=BCoVBRSVmultiplex+1
           write.table(temp, paste0("./temp_BCOVBRSVmultiplex/", dataTempFiles[j]), quote = FALSE, sep = ",", col.names = TRUE, row.names = FALSE)
+        } else if(grepl("M_W", gsub('[0-9]+', '', samples[which(samples$Well == wellTemp), c("target")]), fixed = TRUE)){
+          variantmultiplex=variantmultiplex+1
+          write.table(temp, paste0("./temp_variantsmultiplex/", dataTempFiles[j]), quote = FALSE, sep = ",", col.names = TRUE, row.names = FALSE)
         }
       }
     }
   
-  No.BCoVBRSV.samples=No.N1N2.samples=No.N1N2Sludge.samples=No.FAM.samples=No.HEX.samples=0
+  No.BCoVBRSV.samples=No.N1N2.samples=No.N1N2Sludge.samples=No.FAM.samples=No.HEX.samples=No.variant.samples=0
   samples$target<-str_replace(samples$target, "N1S", "N1"); samples$target<-str_replace(samples$target, "N2S", "N2")
   
   
@@ -275,7 +293,9 @@ Analyse_ddPCR_results <- function() {
   }
   
   
+
   
+    
   
   
   
@@ -420,6 +440,157 @@ Analyse_ddPCR_results <- function() {
     cat(sep="\n\n")
     
   }
+  
+  
+  
+  
+  
+
+
+  #####  Read the BioRad variants multiplex data  ###### 
+  if(variantmultiplex>0){
+    print("variant multiplex sample(s) detected")
+    plate.variant.genuine.multiplex <- ddpcrPlate(well="temp_variantsmultiplex/.")
+    No.variant.samples<-length(names(plate.variant.genuine.multiplex))
+    names(plate.variant.genuine.multiplex) # list all the N1/N2 wells
+    plate.variant.cluster <- plate.variant.genuine.multiplex # duplicate "plate.sludge.genuine". "plate.sludge.cluster" will store the k-means clusters
+    list.variant<-matrix(NA, No.variant.samples, 1)
+    
+     #commonClassificationMethod(plate.variant.genuine.multiplex) # 
+     #facetPlot(plate.variant.genuine.multiplex, cMethod="Cluster") # droplets per well
+    
+    
+    ## Define 4 clusters (i.e. NN (negative), PN (N1), PP (N1/N2) and NP (N2) for each well)
+    for(i in 1:No.variant.samples) {
+      
+      ## Preparation
+      well = 0
+      four.clusters.NN.Ch1 = four.clusters.variant.genuine.NN.Ch1
+      four.clusters.NN.Ch2 = four.clusters.variant.genuine.NN.Ch2
+      four.clusters <- four.clusters.variant.genuine
+      well_ID=as.character(names(plate.variant.genuine.multiplex)[i])
+      
+      well<-plate.variant.genuine.multiplex[[well_ID]]
+      well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
+      well_target<-as.numeric(gsub("([0-9]+).*$", "\\1", strsplit(as.character(samples[which(samples$Well == well_ID), 3]), '_' ,fixed=TRUE)[[1]][1]))
+      well_sample_plot<-str_replace(well_sample, ":", "to")
+      print(paste0(well_ID, " - ", well_target,  " variant"))
+      list.variant[i, ]<-well_target
+      #dropletPlot(well)
+      
+      ## Define the center of the Negative droplets for the well
+      well.NN <- well@dropletAmplitudes[which(well@classification$Cluster == "NN"),]
+      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude); well.NN.Ch1
+      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude); well.NN.Ch2
+      
+      ## Determine the difference of origin between the artificial and the real sample (i.e., ch1 and ch2)
+      ch1<-four.clusters.NN.Ch1-well.NN.Ch1; ch1
+      ch2<-four.clusters.NN.Ch2-well.NN.Ch2; ch2
+      
+      ## Correct the position of the artificial sample to match the real sample
+      four.clusters@dropletAmplitudes$Ch1.Amplitude<-four.clusters@dropletAmplitudes$Ch1.Amplitude-ch1
+      four.clusters@dropletAmplitudes$Ch2.Amplitude<-four.clusters@dropletAmplitudes$Ch2.Amplitude-ch2
+      four.clusters@classification$Cluster<-"artificial"
+      
+      ## Add artificial sample to the real sample
+      well@classification<-rbind(four.clusters@classification, well@classification)
+      well@dropletAmplitudes<-rbind(four.clusters@dropletAmplitudes, well@dropletAmplitudes)
+      #dropletPlot(well)
+      
+      ## Define the 4 clusters (NN (negative), PN (N1), PP (N1/N2) and NP (N2))
+      well <- kmeansClassify(well, 
+                             centres=matrix(c(3000-ch1, 2500-ch2,    8000-ch1, 2500-ch2,   8000-ch1, 5000-ch2,   3000-ch1, 5000-ch2), ncol=2, byrow=TRUE))
+      #dropletPlot(well, cMethod="kmeans")
+      
+      ## Remove the rain between the clusters
+      well <- sdRain(well, cMethod="kmeans", errorLevel = 5) #5 = default 
+      #dropletPlot(well, cMethod="kmeansSdRain")
+      
+      ## Remove artificial droplets
+      well@dropletAmplitudes<-well@dropletAmplitudes[which(well@classification$Cluster != "artificial"),]
+      well@classification<-well@classification[which(well@classification$Cluster != "artificial"),]
+      #dropletPlot(well, cMethod="kmeansSdRain")
+      
+      
+      ## If NA are generated during the last step, replace NA by kmeans classification
+      na<-which(is.na(well@classification$kmeansSdRain))
+      well@classification$kmeansSdRain[na]<-well@classification$kmeans[na]
+      
+      ## Add info to the plate
+      plate.variant.cluster[[well_ID]]<-well
+      
+      ## Print plots
+      pdf(paste0("multiplex_", well_target, "variant_", well_ID, "_", well_sample_plot, "_2D.pdf"), width=8, height=8)
+      print(dropletPlot(well, cMethod="kmeansSdRain"))
+      dev.off()
+      
+      well.plot<-as.data.frame(cbind(well@dropletAmplitudes$Ch1.Amplitude, well@dropletAmplitudes$Ch2.Amplitude, well@classification$kmeansSdRain))
+      names(well.plot)<-c("Ch1.Amplitude", "Ch2.Amplitude", "kmeansSdRain")
+      well.plot$kmeansSdRain<-gsub(1, "negative", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(2, "HEX", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(3, "FAM", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(4, "FAM-HEX", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(5, "rain", well.plot$kmeansSdRain)
+      
+      pdf(paste0("multiplex_", well_target, "variant_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(kmeansSdRain)))+ xlab("droplets (0-total accepted droplets)") + geom_point() + scale_color_manual(name = "Droplet clusters:", values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
+      dev.off()
+      pdf(paste0("multiplex_", well_target, "variant_", well_ID, "_", well_sample_plot, "_1D_ch2.pdf"), width=8, height=8)
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(kmeansSdRain))) + xlab("droplets (0-total accepted droplets)") + geom_point() + scale_color_manual(name = "Droplet clusters:", values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
+      dev.off()
+    }
+    
+    ## Generate multiplex data
+    print(paste0(No.variant.samples, " variant files processed"))
+    cat(sep="\n\n")
+    print("Compiling the output files...")
+    results.variant.multiplex<-plateSummary(plate.variant.cluster, cMethod="kmeansSdRain", ch1Label = "N1", ch2Label = "N2")
+    results.variant.multiplex$FAM.HEX.difference<-round(results.variant.multiplex[,10]/results.variant.multiplex[,11], digits = 2)
+    results.variant.multiplex$flag.FAM.HEX.difference<-"okay"
+    results.variant.multiplex$flag.FAM.HEX.difference[is.na(results.variant.multiplex$flag.FAM.HEX.difference)] <- "okay"
+    
+    
+    ## Split data to get 1 row = 1 assay
+    results.variant.multiplex.FAM<-results.variant.multiplex[, c(1,2,5,6,7,10,12,18)]
+    results.variant.multiplex.FAM$Target<-paste0(list.variant, "M")
+    results.variant.multiplex.FAM$DyeName<-"FAM"
+    results.variant.multiplex.FAM$Well<-row.names(results.variant.multiplex.FAM)
+    results.variant.multiplex.HEX<-results.variant.multiplex[, c(1,3,5,8,9,11,13,18)]
+    results.variant.multiplex.HEX$Target<-paste0(list.variant, "W")
+    results.variant.multiplex.HEX$DyeName<-"HEX"
+    results.variant.multiplex.HEX$Well<-row.names(results.variant.multiplex.HEX)
+    
+    results.variant.multiplex.export<-rbind(results.variant.multiplex.FAM,setnames(results.variant.multiplex.HEX,names(results.variant.multiplex.FAM)))
+    names(results.variant.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
+    results.variant.multiplex.export$Flag.positive.droplets<-ifelse(results.variant.multiplex.export$PositivesDroplets/results.variant.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.variant.multiplex.export$PositivesDroplets/results.variant.multiplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
+    results.variant.multiplex.export$Flag.total.droplets<-ifelse(results.variant.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
+    results.variant.multiplex.export$Run<-run_ID
+    results.variant.multiplex.export$Comment<-""
+    #print(paste0("Number of row before sample name transformation: ", nrow(results.variant.multiplex.export)))
+    results.variant.multiplex.export<-setDT(samples)[results.variant.multiplex.export, on="Well"]
+    #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.variant.multiplex.export)))
+    results.variant.multiplex.export<-results.variant.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
+    results.variant.multiplex.export$NeedRerun<-ifelse(results.variant.multiplex.export$Flag.positive.droplets=="okay" & results.variant.multiplex.export$Flag.total.droplets == "okay" & (results.variant.multiplex.export$Flag.FAM_HEX.difference<4 | results.variant.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.variant.multiplex.export$Comment == "", "", "need_rerun")
+    results.variant.multiplex.export<-results.variant.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
+    # If there is only 1 sample, it is to avoid the Well to be called 1, and Sample to be called NA
+    if(nrow(results.variant.multiplex.export)==2){
+      results.variant.multiplex.export[, c("Well")]<-well_ID
+      results.variant.multiplex.export[, c("Sample")]<-well_sample
+      
+    }
+    
+    ## Export the data ## 
+    write.table(results.variant.multiplex.export, paste0("results_variant.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
+    write.table(results.variant.multiplex, paste0("details_results_variant.csv"), quote = FALSE, row.names = TRUE, col.names = TRUE, sep = ",")
+    saveRDS(plate.variant.cluster, file = "plate_variant.RData")
+    
+    print("done!")
+    cat(sep="\n\n")
+    cat(sep="\n\n")
+    
+  }
+  
+  
   
   
   
@@ -663,6 +834,7 @@ if(BCoVBRSVmultiplex>0){
   #####  Merge all final databases  #####
   final.results <- rbind(if(exists("results.N1N2.multiplex.export")) results.N1N2.multiplex.export,
                          if(exists("results.N1N2sludge.multiplex.export")) results.N1N2sludge.multiplex.export, 
+                         if(exists("results.variant.multiplex.export")) results.variant.multiplex.export, 
                          if(exists("results.BCOVBRSV.multiplex.export")) results.BCOVBRSV.multiplex.export, 
                          if(exists("results.FAMsingleplex.export")) results.FAMsingleplex.export, 
                          if(exists("results.HEXsingleplex.export")) results.HEXsingleplex.export)
@@ -674,6 +846,7 @@ if(BCoVBRSVmultiplex>0){
   unlink("temp_BCOVBRSVmultiplex", recursive=TRUE)
   unlink("temp_N1N2multiplex", recursive=TRUE)
   unlink("temp_N1N2sludgemultiplex", recursive=TRUE)
+  unlink("temp_variantsmultiplex", recursive=TRUE)
   unlink("temp_FAMsingleplex", recursive=TRUE)
   unlink("temp_HEXsingleplex", recursive=TRUE)
   
@@ -681,7 +854,7 @@ if(BCoVBRSVmultiplex>0){
   
   ##### Recap number of samples ######
   print(paste0(length(dataRawFiles), " raw amplification files detected"))
-  print(paste0(No.BCoVBRSV.samples+No.N1N2.samples+No.N1N2Sludge.samples+No.FAM.samples+No.HEX.samples, " files processed at the end"))
+  print(paste0(No.BCoVBRSV.samples+No.N1N2.samples+No.N1N2Sludge.samples+No.FAM.samples+No.HEX.samples+No.variant.samples, " files processed at the end"))
 
   
   }
