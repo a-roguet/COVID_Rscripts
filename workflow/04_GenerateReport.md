@@ -12,7 +12,7 @@ Congrats, you are almost done! This last workflow will guide to:
 
 ## Before starting
 
-1. Make sure that you flagged all the samples that have to be discarded from the process by adding "need rerun" in their sample_ID. Only good data can be sent to DHS/CDC (see workflow )
+1. Make sure that you flagged all the samples that have to be discarded from the process by adding "need_rerun" in the NeedRerun column. Only good data can be sent to DHS/CDC (see workflow )
 2. Make sure all WWTP parameters have been checked (the best is right before starting that step, lessening the chances that someone added poorly formatted data).
 3. If the big-spreadsheet is open, make sure it has been saved (to avoid working on an outdated version). Close the big-spreadsheet.
 4. Make sure OneDrive Desktop is up-do-date (Figure 1). If not, you will generate a database with out-of-date data!
@@ -36,6 +36,8 @@ Congrats, you are almost done! This last workflow will guide to:
 
 ## Generate the database
 
+*No need to create a folder (with the date and time) to store the new database, the R script will automatically create one for yo. All important files will be stored in it, except a .html file that keeps track of the R processes (that is stored in the CDC_DHS_reports directory).* 
+
 1. Open the file **UWM_SARS-CoV-2_report_script.Rmd** using RStudio
 2. Knit the document (File > Knit Document)
 3. Once done, cut and paste the .html file generated 
@@ -44,8 +46,6 @@ In **CDC_DHS_reports** directory, the script generates a file named **UWM_SARS-C
 > **YEAR** - **MONTH** - **DAY** _ **HOURMINUTES**
 
 4. Cut and paste **UWM_SARS-CoV-2_report_script.html** into the folder freshly created.
-
-5. To avoid confusion, delete the **.Rmd** files that are still in the **CDC_DHS_reports** directory.
 
 
 
@@ -65,13 +65,13 @@ In **CDC_DHS_reports** directory, the script generates a file named **UWM_SARS-C
 <iframe src="https://drive.google.com/file/d/1-mnVTlKaMjVfzxMGhvUq2bPyrb5nhvlr/preview" width="640" height="480"></iframe>
 **Figure 2**
 
-7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. If any, flag samples that look like outliers:
+7. Visually check N1, N2, N1/N2, PMMoV, and HF183 concentrations across time, as well as the BCoV recovery rate. If any, flag samples that look like outliers. 
 - Open **RawData ddPCR** tab in the big spreadsheet
 - Add **"need_rerun"** to the column **NeedRerun**
-- Delete the folder that has been freshly created
+- Delete the folder that has been freshly created (named as e.g., 21-04-05_1558)
 - Restart this workflow from the beginning
 
-| If the same values are confirmed with the re-run, then remove all "need rerun" in the Sample_ID. Make sure the light grey columns are not displaying "#N/A" any longer.
+| If the same values are confirmed with the re-run, then remove all "need_rerun" in the NeedRerun column. Make sure the light grey columns are not displaying "#N/A" any longer.
 
 
 
@@ -91,7 +91,7 @@ The database we send to DHS should:
 
 1. Open **DatabaseCuration.Rmd** using RStudio
    
-> SARS-CoV-2 > REPORTS > CDC_DHS_reports > FOLDER > DatabaseCuration.Rmd
+> SARS-CoV-2 > REPORTS > CDC_DHS_reports > FRESHLY CREATED FOLDER (e.g., 21-04-05_1558) > DatabaseCuration.Rmd
 
    
 
@@ -123,7 +123,9 @@ The database we send to DHS should:
 
 
 
+## Clean up after your mess
 
+1. To avoid confusion, delete the **.Rmd** files that are still in the **CDC_DHS_reports** directory.
 
 
 
