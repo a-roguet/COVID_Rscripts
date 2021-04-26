@@ -41,6 +41,8 @@ run_ID = "XXXXXXXXXXX"
 .csv name (in the folder)
 ```{r}
 samples.info = "XXXXXXXXXXX.csv" 
+N1.LOQ.No.droplet=10
+N2.LOQ.No.droplet=10
 ```
 
 

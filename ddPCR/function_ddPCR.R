@@ -247,7 +247,7 @@ Analyse_ddPCR_results <- function() {
     print("Compiling the output files...")
     results.N1N2.multiplex<-plateSummary(plate.cluster, cMethod="kmeansSdRain", ch1Label = "N1", ch2Label = "N2")
     results.N1N2.multiplex$FAM.HEX.difference<-round(results.N1N2.multiplex[,10]/results.N1N2.multiplex[,11], digits = 2)
-    results.N1N2.multiplex$flag.FAM.HEX.difference<-ifelse(results.N1N2.multiplex$FAM.HEX.difference>2,results.N1N2.multiplex$FAM.HEX.difference, "okay")
+    results.N1N2.multiplex$flag.FAM.HEX.difference<-ifelse(results.N1N2.multiplex$FAM.HEX.difference<=2,"okay", ifelse(results.N1N2.multiplex$N1Positives<N1.LOQ.No.droplet | results.N1N2.multiplex$N2Positives<N2.LOQ.No.droplet, paste0("okay (", results.N1N2.multiplex$FAM.HEX.difference, ")"), results.N1N2.multiplex$FAM.HEX.difference))
     results.N1N2.multiplex$flag.FAM.HEX.difference[is.na(results.N1N2.multiplex$flag.FAM.HEX.difference)] <- "okay"
 
     
@@ -271,7 +271,7 @@ Analyse_ddPCR_results <- function() {
     results.N1N2.multiplex.export<-setDT(samples)[results.N1N2.multiplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.N1N2.multiplex.export)))
     results.N1N2.multiplex.export<-results.N1N2.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-    results.N1N2.multiplex.export$NeedRerun<-ifelse(results.N1N2.multiplex.export$Flag.positive.droplets=="okay" & results.N1N2.multiplex.export$Flag.total.droplets == "okay" & (results.N1N2.multiplex.export$Flag.FAM_HEX.difference<4 | results.N1N2.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.N1N2.multiplex.export$Comment == "", "", "need_rerun")
+    results.N1N2.multiplex.export$NeedRerun<-ifelse(results.N1N2.multiplex.export$Flag.positive.droplets=="okay" & results.N1N2.multiplex.export$Flag.total.droplets == "okay" & (results.N1N2.multiplex.export$Flag.FAM_HEX.difference<4 | grepl("okay", results.N1N2.multiplex.export$Flag.FAM_HEX.difference)) & results.N1N2.multiplex.export$Comment == "", "", "need_rerun")
     results.N1N2.multiplex.export<-results.N1N2.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     # If there is only 1 sample, it is to avoid the Well to be called 1, and Sample to be called NA
     if(nrow(results.N1N2.multiplex.export)==2){
@@ -397,7 +397,7 @@ Analyse_ddPCR_results <- function() {
     print("Compiling the output files...")
     results.N1N2sludge.multiplex<-plateSummary(plate.sludge.cluster, cMethod="kmeansSdRain", ch1Label = "N1", ch2Label = "N2")
     results.N1N2sludge.multiplex$FAM.HEX.difference<-round(results.N1N2sludge.multiplex[,10]/results.N1N2sludge.multiplex[,11], digits = 2)
-    results.N1N2sludge.multiplex$flag.FAM.HEX.difference<-ifelse(results.N1N2sludge.multiplex$FAM.HEX.difference>2,results.N1N2sludge.multiplex$FAM.HEX.difference, "okay")
+    results.N1N2sludge.multiplex$flag.FAM.HEX.difference<-ifelse(results.N1N2sludge.multiplex$FAM.HEX.difference<=2,"okay", ifelse(results.N1N2sludge.multiplex$N1Positives<N1.LOQ.No.droplet | results.N1N2sludge.multiplex$N2Positives<N2.LOQ.No.droplet, paste0("okay (", results.N1N2sludge.multiplex$FAM.HEX.difference, ")"), results.N1N2sludge.multiplex$FAM.HEX.difference))
     results.N1N2sludge.multiplex$flag.FAM.HEX.difference[is.na(results.N1N2sludge.multiplex$flag.FAM.HEX.difference)] <- "okay"
     
     
@@ -421,7 +421,7 @@ Analyse_ddPCR_results <- function() {
     results.N1N2sludge.multiplex.export<-setDT(samples)[results.N1N2sludge.multiplex.export, on="Well"]
     #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.N1N2sludge.multiplex.export)))
     results.N1N2sludge.multiplex.export<-results.N1N2sludge.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
-    results.N1N2sludge.multiplex.export$NeedRerun<-ifelse(results.N1N2sludge.multiplex.export$Flag.positive.droplets=="okay" & results.N1N2sludge.multiplex.export$Flag.total.droplets == "okay" & (results.N1N2sludge.multiplex.export$Flag.FAM_HEX.difference<4 | results.N1N2sludge.multiplex.export$Flag.FAM_HEX.difference=="okay") & results.N1N2sludge.multiplex.export$Comment == "", "", "need_rerun")
+    results.N1N2sludge.multiplex.export$NeedRerun<-ifelse(results.N1N2sludge.multiplex.export$Flag.positive.droplets=="okay" & results.N1N2sludge.multiplex.export$Flag.total.droplets == "okay" & (results.N1N2sludge.multiplex.export$Flag.FAM_HEX.difference<4 | grepl("okay", results.N1N2sludge.multiplex.export$Flag.FAM_HEX.difference)) & results.N1N2sludge.multiplex.export$Comment == "", "", "need_rerun")
     results.N1N2sludge.multiplex.export<-results.N1N2sludge.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
     # If there is only 1 sample, it is to avoid the Well to be called 1, and Sample to be called NA
     if(nrow(results.N1N2sludge.multiplex.export)==2){
@@ -544,7 +544,7 @@ Analyse_ddPCR_results <- function() {
     print(paste0(No.variant.samples, " variant files processed"))
     cat(sep="\n\n")
     print("Compiling the output files...")
-    results.variant.multiplex<-plateSummary(plate.variant.cluster, cMethod="kmeansSdRain", ch1Label = "N1", ch2Label = "N2")
+    results.variant.multiplex<-plateSummary(plate.variant.cluster, cMethod="kmeansSdRain", ch1Label = "M", ch2Label = "W")
     results.variant.multiplex$FAM.HEX.difference<-round(results.variant.multiplex[,10]/results.variant.multiplex[,11], digits = 2)
     results.variant.multiplex$flag.FAM.HEX.difference<-"okay"
     results.variant.multiplex$flag.FAM.HEX.difference[is.na(results.variant.multiplex$flag.FAM.HEX.difference)] <- "okay"
@@ -576,12 +576,20 @@ Analyse_ddPCR_results <- function() {
     if(nrow(results.variant.multiplex.export)==2){
       results.variant.multiplex.export[, c("Well")]<-well_ID
       results.variant.multiplex.export[, c("Sample")]<-well_sample
-      
     }
+    
+    #Export summarized data for BioRad variant assays
+    results.variant.multiplex.summarized<-cbind(row.names(results.variant.multiplex), results.variant.multiplex); names(results.variant.multiplex.summarized)[1]<-"Well"
+    results.variant.multiplex.summarized<-setDT(as.data.frame(results.variant.multiplex.export))[as.data.frame(results.variant.multiplex.summarized), on="Well"]
+    results.variant.multiplex.summarized$BioRadAssay<-gsub("[^0-9.-]", "", results.variant.multiplex.summarized$Target)
+    results.variant.multiplex.summarized<-results.variant.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "MConcentration", "WConcentration", "Flag.positive.droplets", "Flag.total.droplets")]
+    results.variant.multiplex.summarized<-unique(results.variant.multiplex.summarized)
+    
     
     ## Export the data ## 
     write.table(results.variant.multiplex.export, paste0("results_variant.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
     write.table(results.variant.multiplex, paste0("details_results_variant.csv"), quote = FALSE, row.names = TRUE, col.names = TRUE, sep = ",")
+    write.table(results.variant.multiplex.summarized, paste0("results_final_variant.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
     saveRDS(plate.variant.cluster, file = "plate_variant.RData")
     
     print("done!")
