@@ -861,7 +861,7 @@ if(isTRUE(nrow(report.check.FALSE)>0)==TRUE){kable(report.check.FALSE, format = 
 ```{r echo=FALSE, dpi=300}
 N1.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N1SARSCoV2Conc))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free_y", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
   scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
   geom_line(aes(y = N1_LOD), color="red") +
   geom_line(aes(y = N1_LOQ), color="blue") +
@@ -882,7 +882,7 @@ pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N1
 ```{r echo=FALSE, dpi=300}
 N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N2SARSCoV2Conc))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free_y", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
   scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
   geom_line(aes(y = N2_LOD), color="red") +
   geom_line(aes(y = N2_LOQ), color="blue") +
@@ -902,7 +902,7 @@ pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N2
 ```{r echo=FALSE, dpi=300}
 N1N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=AvgSARSCoV2Conc)) +
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free_y", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
   scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
   geom_line(aes(y = (report$N1_LOD+report$N2_LOD)/2), color="red") +
   geom_line(aes(y = (report$N1_LOQ+report$N2_LOQ)/2), color="blue") +
@@ -916,7 +916,7 @@ pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N1
 ```{r echo=FALSE, dpi=300}
 BCoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=BCoVRecRate))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free") + 
   theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
         axis.title.x = element_blank()) + 
   ggtitle("BCoV recovery")
@@ -929,7 +929,7 @@ pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/BC
 ```{r echo=FALSE, dpi=300}
 PMMoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=log10(PPMoVConc)))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free") + 
   theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
         axis.title.x = element_blank()) + 
   ggtitle("PMMoV concentration - log10")
@@ -941,7 +941,7 @@ pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/PM
 ```{r echo=FALSE, dpi=300}
 HF183.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=log10(HF183)))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
-  facet_wrap(~WWTPName, scales = "free", ncol = 2) + 
+  facet_wrap(~WWTPName, scales = "free") + 
   theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
         axis.title.x = element_blank()) + 
   ggtitle("HF183 concentration - log10")
