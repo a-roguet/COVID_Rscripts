@@ -86,7 +86,7 @@ Analyse_ddPCR_results <- function() {
   four.clusters.variant.genuine.NN <- four.clusters.variant.genuine@dropletAmplitudes[which(four.clusters.variant.genuine@classification$Cluster == "NN"),]
   four.clusters.variant.genuine.NN.Ch1<-mean(four.clusters.variant.genuine.NN$Ch1.Amplitude) 
   four.clusters.variant.genuine.NN.Ch2<-mean(four.clusters.variant.genuine.NN$Ch2.Amplitude) 
-  
+  #dropletPlot(four.clusters.variant.genuine, cMethod="Cluster")
   
   
   
@@ -181,12 +181,12 @@ Analyse_ddPCR_results <- function() {
       
       ## Define the center of the Negative droplets for the well
       well.NN <- well@dropletAmplitudes[which(well@classification$Cluster == "NN"),]
-      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude); well.NN.Ch1
-      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude); well.NN.Ch2
+      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude)
+      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude)
       
       ## Determine the difference of origin between the artificial and the real sample (i.e., ch1 and ch2)
-      ch1<-four.clusters.NN.Ch1-well.NN.Ch1; ch1
-      ch2<-four.clusters.NN.Ch2-well.NN.Ch2; ch2
+      ch1<-four.clusters.NN.Ch1-well.NN.Ch1
+      ch2<-four.clusters.NN.Ch2-well.NN.Ch2
       
       ## Correct the position of the artificial sample to match the real sample
       four.clusters@dropletAmplitudes$Ch1.Amplitude<-four.clusters@dropletAmplitudes$Ch1.Amplitude-ch1
@@ -331,12 +331,12 @@ Analyse_ddPCR_results <- function() {
       
       ## Define the center of the Negative droplets for the well
       well.NN <- well@dropletAmplitudes[which(well@classification$Cluster == "NN"),]
-      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude); well.NN.Ch1
-      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude); well.NN.Ch2
+      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude)
+      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude)
       
       ## Determine the difference of origin between the artificial and the real sample (i.e., ch1 and ch2)
-      ch1<-four.clusters.NN.Ch1-well.NN.Ch1; ch1
-      ch2<-four.clusters.NN.Ch2-well.NN.Ch2; ch2
+      ch1<-four.clusters.NN.Ch1-well.NN.Ch1
+      ch2<-four.clusters.NN.Ch2-well.NN.Ch2
       
       ## Correct the position of the artificial sample to match the real sample
       four.clusters@dropletAmplitudes$Ch1.Amplitude<-four.clusters@dropletAmplitudes$Ch1.Amplitude-ch1
@@ -480,12 +480,12 @@ Analyse_ddPCR_results <- function() {
       
       ## Define the center of the Negative droplets for the well
       well.NN <- well@dropletAmplitudes[which(well@classification$Cluster == "NN"),]
-      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude); well.NN.Ch1
-      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude); well.NN.Ch2
+      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude)
+      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude)
       
       ## Determine the difference of origin between the artificial and the real sample (i.e., ch1 and ch2)
-      ch1<-four.clusters.NN.Ch1-well.NN.Ch1; ch1
-      ch2<-four.clusters.NN.Ch2-well.NN.Ch2; ch2
+      ch1<-four.clusters.NN.Ch1-well.NN.Ch1
+      ch2<-four.clusters.NN.Ch2-well.NN.Ch2
       
       ## Correct the position of the artificial sample to match the real sample
       four.clusters@dropletAmplitudes$Ch1.Amplitude<-four.clusters@dropletAmplitudes$Ch1.Amplitude-ch1
@@ -499,8 +499,8 @@ Analyse_ddPCR_results <- function() {
       
       ## Define the 4 clusters (NN (negative), PN (N1), PP (N1/N2) and NP (N2))
       well <- kmeansClassify(well, 
-                             centres=matrix(c(3000-ch1, 2500-ch2,    8000-ch1, 2500-ch2,   8000-ch1, 5000-ch2,   3000-ch1, 5000-ch2), ncol=2, byrow=TRUE))
-      #dropletPlot(well, cMethod="kmeans")
+                             centres=matrix(c(4000-ch1, 2500-ch2,    8000-ch1, 2500-ch2,   8000-ch1, 5000-ch2,   2500-ch1, 5000-ch2), ncol=2, byrow=TRUE))
+      dropletPlot(well, cMethod="kmeans")
       
       ## Remove the rain between the clusters
       well <- sdRain(well, cMethod="kmeans", errorLevel = 5) #5 = default 
@@ -509,12 +509,20 @@ Analyse_ddPCR_results <- function() {
       ## Remove artificial droplets
       well@dropletAmplitudes<-well@dropletAmplitudes[which(well@classification$Cluster != "artificial"),]
       well@classification<-well@classification[which(well@classification$Cluster != "artificial"),]
-      #dropletPlot(well, cMethod="kmeansSdRain")
+      dropletPlot(well, cMethod="kmeansSdRain")
       
+      ## Replace FAM-HEX droplets by rain
+      #well@classification$kmeansSdRain['Rain']<-well@classification$kmeansSdRain['PP']
+      #well@classification$kmeansSdRain<-as.factor(gsub("PP", "Rain", well@classification$kmeansSdRain))
+      PP<-which(well@classification$kmeansSdRain=="PP")
+      well@classification$kmeansSdRain[PP]<-'Rain'
+      dropletPlot(well, cMethod="kmeansSdRain")
       
       ## If NA are generated during the last step, replace NA by kmeans classification
       na<-which(is.na(well@classification$kmeansSdRain))
       well@classification$kmeansSdRain[na]<-well@classification$kmeans[na]
+      dropletPlot(well, cMethod="kmeansSdRain")
+      
       
       ## Add info to the plate
       plate.variant.cluster[[well_ID]]<-well
