@@ -29,43 +29,43 @@ Analyse_ddPCR_results <- function() {
   
   ### N1/N2 INFLUENT ###
   ## Import data 
-  # setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
-  # articificial.sample.plate <- ddpcrPlate(well=".")
+  # setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  # Artificial.sample.plate <- ddpcrPlate(well=".")
   
   ## Select the info from the unique well (A01)
-  # four.clusters<-articificial.sample.plate[["A01"]]
+  # four.clusters<-Artificial.sample.plate[["A01"]]
   # dropletPlot(four.clusters)
-  # saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
+  # saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_iowa.RData")
   
   
   ### N1/N2 SLUDGE ###
   ## Import data
-  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
-  #articificial.sample.plate <- ddpcrPlate(well=".")
+  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  #Artificial.sample.plate <- ddpcrPlate(well=".")
   
   ## Select the info from the unique well (A01)
-  #four.clusters<-articificial.sample.plate[["A01"]]
+  #four.clusters<-Artificial.sample.plate[["A01"]]
   #dropletPlot(four.clusters, cMethod="Cluster")
-  #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa_sludge.RData")
+  #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_iowa_sludge.RData")
  
   
   ### BioRad variants ###
   ## Import data
-  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
-  #articificial.sample.plate <- ddpcrPlate(well=".")
+  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  #Artificial.sample.plate <- ddpcrPlate(well=".")
   
   ## Select the info from the unique well (A01)
-  #four.clusters<-articificial.sample.plate[["A01"]]
+  #four.clusters<-Artificial.sample.plate[["A01"]]
   #dropletPlot(four.clusters, cMethod="Cluster")
-  #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_variant.RData")
+  #saveRDS(four.clusters, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_variant.RData")
 
   
   ### Merge all .RData ###
-  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Articificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
-  #four.clusters.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa.RData")
-  #four.clusters.sludge.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_iowa_sludge.RData")
-  #four.clusters.variant.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_variant.RData")
-  #save(four.clusters.genuine, four.clusters.sludge.genuine, four.clusters.variant.genuine, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/four_clusters_ALL.RData")
+  #setwd("~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/") # BioRad Clusters: 1=NN, 2=PN (FAM), 3=PP (FAM/HEX), 4=NP (HEX)
+  #four.clusters.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_iowa.RData")
+  #four.clusters.sludge.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_iowa_sludge.RData")
+  #four.clusters.variant.genuine <- readRDS(file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_variant.RData")
+  #save(four.clusters.genuine, four.clusters.sludge.genuine, four.clusters.variant.genuine, file = "~/OneDrive - UWM/SARS-CoV-2/DATA/ddPCR data/Artificial_Sample/four_clusters_ALL.RData")
 
   
    ### Load .RData ###
