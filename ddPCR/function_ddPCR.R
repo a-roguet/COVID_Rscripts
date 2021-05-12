@@ -590,7 +590,7 @@ Analyse_ddPCR_results <- function() {
     results.variant.multiplex.summarized<-cbind(row.names(results.variant.multiplex), results.variant.multiplex); names(results.variant.multiplex.summarized)[1]<-"Well"
     results.variant.multiplex.summarized<-setDT(as.data.frame(results.variant.multiplex.export))[as.data.frame(results.variant.multiplex.summarized), on="Well"]
     results.variant.multiplex.summarized$BioRadAssay<-gsub("[^0-9.-]", "", results.variant.multiplex.summarized$Target)
-    results.variant.multiplex.summarized<-results.variant.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "MConcentration", "WConcentration", "Flag.positive.droplets", "Flag.total.droplets")]
+    results.variant.multiplex.summarized<-results.variant.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
     results.variant.multiplex.summarized<-unique(results.variant.multiplex.summarized)
     
     
@@ -850,7 +850,6 @@ if(BCoVBRSVmultiplex>0){
   #####  Merge all final databases  #####
   final.results <- rbind(if(exists("results.N1N2.multiplex.export")) results.N1N2.multiplex.export,
                          if(exists("results.N1N2sludge.multiplex.export")) results.N1N2sludge.multiplex.export, 
-                         if(exists("results.variant.multiplex.export")) results.variant.multiplex.export, 
                          if(exists("results.BCOVBRSV.multiplex.export")) results.BCOVBRSV.multiplex.export, 
                          if(exists("results.FAMsingleplex.export")) results.FAMsingleplex.export, 
                          if(exists("results.HEXsingleplex.export")) results.HEXsingleplex.export)
