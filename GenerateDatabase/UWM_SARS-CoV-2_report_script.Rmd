@@ -605,12 +605,16 @@ names(report)<-c("WWTPName", "EPAID", "Zipcode", "CountyNames", "State", "Capaci
 
 # Export
 ```{r}
+# Export in report directory
 write.table(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/uwm_report_", current_time2, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", col.names = TRUE)
 paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/uwm_report_", current_time2, ".txt")
 
-write.xlsx(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/uwm_report_", current_time2, ".xlsx"))
-paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/uwm_report_", current_time2, ".xlsx")
 
+# Export in visualization directory
+write.xlsx(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report.xlsx"))
+paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/CDC_DHS_reports/Visualization/uwm_report.xlsx")
+write.table(report, "~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report_DO_NOT_MOVE.tsv", row.names = FALSE, quote = FALSE, sep = "\t", col.names = TRUE)
+paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report_DO_NOT_MOVE.tsv")
 ```
 
 
@@ -876,7 +880,7 @@ N1.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , 
   ggtitle("N1 concentration and Poisson-based 95% confidence interval")
 N1.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N1_concentration.pdf")); N1.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1_concentration.pdf")); N1.plot; dev.off()
 ``` 
 
 ```{r echo=FALSE, dpi=300}
@@ -897,7 +901,7 @@ N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , 
   ggtitle("N2 concentration and Poisson-based 95% confidence interval")
 N2.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N2_concentration.pdf")); N2.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N2_concentration.pdf")); N2.plot; dev.off()
 ```
 ```{r echo=FALSE, dpi=300}
 N1N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=AvgSARSCoV2Conc)) +
@@ -911,7 +915,7 @@ N1N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") 
   ggtitle("N1/N2 avg concentration")
 N1N2.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/N1N2_concentration.pdf")); N1N2.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1N2_concentration.pdf")); N1N2.plot; dev.off()
 ```
 ```{r echo=FALSE, dpi=300}
 BCoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=BCoVRecRate))+
@@ -922,7 +926,7 @@ BCoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"),
   ggtitle("BCoV recovery")
 BCoV.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/BCoV_recovery.pdf")); BCoV.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/BCoV_recovery.pdf")); BCoV.plot; dev.off()
 ```
 
 
@@ -935,7 +939,7 @@ PMMoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y")
   ggtitle("PMMoV concentration - log10")
 PMMoV.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/PMMoV_concentration.pdf")); PMMoV.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/PMMoV_concentration.pdf")); PMMoV.plot; dev.off()
 ```
 
 ```{r echo=FALSE, dpi=300}
@@ -947,7 +951,7 @@ HF183.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y")
   ggtitle("HF183 concentration - log10")
 HF183.plot
 
-pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Vizualization/HF183_concentration.pdf")); HF183.plot; dev.off()
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/HF183_concentration.pdf")); HF183.plot; dev.off()
 ```
 
 
