@@ -622,13 +622,58 @@ paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_re
 
 ### Check tables
 ```{r}
-pander(head(metadata.parameter))
-lapply(metadata.parameter,class)
+#pander(head(metadata.parameter))
+#lapply(metadata.parameter,class)
 report.order <- report
 report.order$SampleID <- as.numeric(as.character(report.order$SampleID))
 report.order <- report.order[order(-SampleID),]
-pander(head(report.order))
+pander(head(report.order[,c("WWTPName", "SampleID","SampleCollectDate", "SampleCollectTime",  "WWTPComments", "N1SARSCoV2Conc", "N1SARSCoV2BelowLOD", "N1SARSCoV2StdError", "NTCAmplifyN1", "NumNTCAmplifyN1", "NumNoTargetControlN1", "N1_LOD", "N1_LOQ", "N2SARSCoV2Conc", "N2SARSCoV2BelowLOD", "N2SARSCoV2StdError", "NTCAmplifyN2", "NumNTCAmplifyN2", "NumNoTargetControlN2", "N2_LOD", "N2_LOQ", "AvgSARSCoV2Conc", "AvgSARSCoV2BelowLOD", "PPMoVConc", "BCoVRecRate", "InhibitionDetect", "InhibitionAdjust", "AnalyticalComments", "TestResultDate", "AverageFlowRate", "EquivSewageAmt", "TSS", "pH", "BOD", "Conductivity", "Temperature", "BCoVSpikeConc", "N1SARSCoV2CI95lo",	"N1SARSCoV2CI95up", "N2SARSCoV2CI95lo",	"N2SARSCoV2CI95up")]))
 ```
+
+### Are there missing values or NAs?
+```{r echo=FALSE}
+report.aug2020<-subset(report.order[order(SampleID),], as.Date(SampleCollectDate, format = "%m/%d/%Y") >="2020-08-01")
+report.oct2020<-subset(report.order[order(SampleID),], as.Date(SampleCollectDate, format = "%m/%d/%Y") >="2020-10-01")
+report.feb2021<-subset(report.order[order(SampleID),], as.Date(SampleCollectDate, format = "%m/%d/%Y") >="2021-02-01")
+
+N1Na<-report.aug2020[is.na(report.aug2020$N1SARSCoV2Conc), ]
+if(nrow(N1Na)>0) {print("N1 NAs:"); print(paste0("CV", as.character(N1Na$SampleID)))} else {print("N1 tested for each sample")}
+
+N2Na<-report.aug2020[is.na(report.aug2020$N2SARSCoV2Conc), ]
+if(nrow(N2Na)>0) {print("N2 NAs:"); print(paste0("CV", as.character(N2Na$SampleID)))} else {print("N2 tested for each sample")}
+
+N1N2Na<-report.aug2020[is.na(report.aug2020$AvgSARSCoV2Conc), ]
+if(nrow(N1N2Na)>0) {print("N1/N2 NAs:"); print(paste0("CV", as.character(N1N2Na$SampleID)))} else {print("N1/N2 tested for each sample")}
+
+N1NTCampli<-report.oct2020[which(report.oct2020$NTCAmplifyN1=="yes"), ]
+if(nrow(N1NTCampli)>0) {print("N1 NTCs amplified:"); print(paste0("CV", as.character(N1NTCampli$SampleID)))} else {print("no N1-NTC amplified (after Oct. 1st, 2020)")}
+
+N2NTCampli<-report.oct2020[which(report.oct2020$NTCAmplifyN2=="yes"), ]
+if(nrow(N2NTCampli)>0) {print("N2 NTCs amplified:"); print(paste0("CV", as.character(N2NTCampli$SampleID)))} else {print("no N2-NTC amplified (after Oct. 1st, 2020)")}
+
+NoN1<-report.oct2020[which(report.oct2020$NumNoTargetControlN1==0), ]
+if(nrow(NoN1)>0) {print("No N1 NTCs detected:"); print(paste0("CV", as.character(NoN1$SampleID)))} else {print("N1 NTCs tested for each sample (after Oct. 1st, 2020)")}
+
+NoN2<-report.oct2020[which(report.oct2020$NumNoTargetControlN2==0), ]
+if(nrow(NoN2)>0) {print("No N2 NTCs detected:"); print(paste0("CV", as.character(NoN2$SampleID)))} else {print("N2 NTCs tested for each sample (after Oct. 1st, 2020)")}
+
+PMMoVNa<-report.oct2020[is.na(report.oct2020$PPMoVConc), ]
+if(nrow(PMMoVNa)>0) {print("PMMoV NAs:"); print(paste0("CV", as.character(PMMoVNa$SampleID)))} else {print("PMMoV tested for each sample (after Oct. 1st, 2020)")}
+
+BCoVNa<-report.oct2020[is.na(report.oct2020$BCoVRecRate), ]
+if(nrow(BCoVNa)>0) {print("BCoV NAs:"); print(paste0("CV", as.character(BCoVNa$SampleID)))} else {print("BCoV tested for each sample (after Oct. 1st, 2020)")}
+
+DateNa<-report.oct2020[is.na(report.oct2020$SampleCollectDate), ]
+if(nrow(DateNa)>0) {print("Date NAs:"); print(paste0("CV", as.character(DateNa$SampleID)))} else {print("Date tested for each sample (after Oct. 1st, 2020)")}
+
+FlowNa<-report.oct2020[is.na(report.oct2020$AverageFlowRate), ]
+if(nrow(FlowNa)>0) {print("Flow NAs:"); print(paste0("CV", as.character(FlowNa$SampleID)))} else {print("Flow tested for each sample (after Oct. 1st, 2020)")}
+
+InhiNa<-report.feb2021[which(report.feb2021$InhibitionDetect=="not tested"), ]
+if(nrow(InhiNa)>0) {print("Inhibition not tested:"); print(paste0("CV", as.character(InhiNa$SampleID)))} else {print("Inhibition tested for each sample (after Feb 1st, 2021)")}
+```
+
+
 
 
 ### Check merging steps
@@ -693,7 +738,6 @@ variable.check[39,]<-c("class(PV.df$N1_droplets_LOD)=numeric", isTRUE(class(PV.d
 variable.check[40,]<-c("class(PV.df$N2_droplets_LOD)=numeric", isTRUE(class(PV.df$N2_droplets_LOD)=="numeric"))
 variable.check[41,]<-c("class(PV.metadata$N1N2_effective_volume_mL)=numeric", isTRUE(class(PV.metadata$N1N2_effective_volume_mL)=="numeric"))
 variable.check[42,]<-c("class(BCoV.exp.log10.per.mL.sewage)=numeric", isTRUE(class(BCoV.exp.log10.per.mL.sewage)=="numeric"))
-
 variable.check[43,]<-c("class(ddPCR$Accepted.Droplets)=numeric", isTRUE(class(ddPCR$Accepted.Droplets)=="numeric"))
 variable.check[44,]<-c("class(ddPCR$Positives$Positives)=numeric", isTRUE(class(ddPCR$Positives)=="numeric"))
 variable.check[45,]<-c("class(lower.upper$Positives_min)=numeric", isTRUE(class(lower.upper$Positives_min)=="numeric"))
