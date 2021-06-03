@@ -571,7 +571,7 @@ Analyse_ddPCR_results <- function() {
     results.variant.multiplex.export<-rbind(results.variant.multiplex.FAM,setnames(results.variant.multiplex.HEX,names(results.variant.multiplex.FAM)))
     names(results.variant.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
     results.variant.multiplex.export$Flag.positive.droplets<-ifelse(results.variant.multiplex.export$PositivesDroplets/results.variant.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.variant.multiplex.export$PositivesDroplets/results.variant.multiplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
-    results.variant.multiplex.export$Flag.total.droplets<-ifelse(results.variant.multiplex.export$AcceptedDroplets<=8000,"low number of droplets", "okay")
+    results.variant.multiplex.export$Flag.total.droplets<-ifelse(results.variant.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
     results.variant.multiplex.export$Run<-run_ID
     results.variant.multiplex.export$Comment<-""
     #print(paste0("Number of row before sample name transformation: ", nrow(results.variant.multiplex.export)))
