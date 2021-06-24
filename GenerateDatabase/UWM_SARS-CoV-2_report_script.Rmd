@@ -86,7 +86,7 @@ dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", curren
 rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="UWM_SARS-CoV-2_report_script*")
 file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", rmd), overwrite = TRUE, copy.mode = TRUE)
 
-rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="DatabaseCuration.Rmd")
+rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="DatabaseCuration*")
 file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", rmd.sample.selection), overwrite = TRUE, copy.mode = TRUE)
 
 file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)

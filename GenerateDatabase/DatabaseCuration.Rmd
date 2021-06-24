@@ -123,15 +123,19 @@ if(length(new.CV)==0 & length(modified.CV)!=0){
 
 Prepare comparison export
 ```{r}
+if(length(modified.CV)!=0){
 comparison.cv<-cbind(last.report.trunc$SampleID, comparison)
 modified.CV.col<-which(colSums(comparison) > 0)
 comparison.cv.changes<-comparison.cv[modified.CV, c(1, modified.CV.col+1)]
 names(comparison.cv.changes)[1]<-"CV"
+}
 ```
 
 Export data
 ```{r}
 write.table(new.report.final, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, "_", number.new.report, ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
 
+if(length(modified.CV)!=0){
 write.table(comparison.cv.changes, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, "_details_changes.txt"), row.names = FALSE, quote = FALSE, sep = "\t", na = "", col.names = TRUE)
+}
 ```
