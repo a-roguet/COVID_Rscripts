@@ -27,14 +27,14 @@ library(dplyr)
 
 Indicate the name of the last report uploaded on the DHS/CDC server
 ```{r}
-foldername.last.CDCDHS.report.sent<-"XXXXXX"
+foldername.last.CDCDHS.report.sent<-"XXXX"
 last.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.last.CDCDHS.report.sent, "/uwm_report_20", foldername.last.CDCDHS.report.sent, ".txt"), h=T, sep = "|")
 ```
 
 Indicate the name of the freshly generated report and the number of the new report
 ```{r}
-foldername.report.just.generated<-"XXXXXX"
-number.new.report<-XXXXXX
+foldername.report.just.generated<-"XXXX"
+number.new.report<-XXX
 new.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, ".txt"), h=T, sep = "|")
 ```
 
@@ -138,4 +138,14 @@ write.table(new.report.final, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DH
 if(length(modified.CV)!=0){
 write.table(comparison.cv.changes, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, "_details_changes.txt"), row.names = FALSE, quote = FALSE, sep = "\t", na = "", col.names = TRUE)
 }
+
+```
+
+
+
+
+Clean the `CDC_DHS_reports' directory
+```{r}
+html<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("UWM_SARS-CoV-2_report*.html"))
+file.rename(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", html), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/", html))
 ```

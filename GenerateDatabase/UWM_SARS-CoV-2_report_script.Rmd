@@ -65,7 +65,7 @@ Physico-chemical parameters are stored in the directory "WWTPs_parameters" in Sa
 metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/*.R");metadata_function
 source(metadata_function)
 compile_WWTPs_parameters()
-metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled.xlsx", sheet = "data", colNames = TRUE)
+metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled_DO_NOT_TOUCH.xlsx", sheet = "data", colNames = TRUE)
 ```
 
 Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
@@ -78,16 +78,16 @@ Information about methods is stored in the tab "method" in the excel file "WWTP_
 method.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", sheet = "method", colNames = TRUE)
 ```
 
-
+# Backup files
 ```{r echo=FALSE, message=FALSE, results='hide'}
 dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/"))
 dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/"))
 
-rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="UWM_SARS-CoV-2_report_script*")
+rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("UWM_SARS-CoV-2_report*.Rmd"))
 file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", rmd), overwrite = TRUE, copy.mode = TRUE)
 
-rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern="DatabaseCuration*")
-file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", rmd.sample.selection), overwrite = TRUE, copy.mode = TRUE)
+rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("DatabaseCuration_DO_NOT_MODIFY*.Rmd"))
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", gsub("_DO_NOT_MODIFY", "", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
 
 file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
@@ -611,7 +611,7 @@ paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/
 
 
 # Export in visualization directory
-write.xlsx(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report.xlsx"))
+write.xlsx(report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report.xlsx"), overwrite = TRUE)
 paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/CDC_DHS_reports/Visualization/uwm_report.xlsx")
 write.table(report, "~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report_DO_NOT_MOVE.tsv", row.names = FALSE, quote = FALSE, sep = "\t", col.names = TRUE)
 paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_report_DO_NOT_MOVE.tsv")
