@@ -121,6 +121,24 @@ if(length(new.CV)==0 & length(modified.CV)!=0){
     }
 ```
 
+
+
+List samples >LOD for N1N2 in the last N1N2 run
+```{r}
+# date last N1N2 run
+new.report$TestResultDate<-as.Date(new.report$TestResultDate, format="%m/%d/%Y")
+last.run<-max(unique(new.report$TestResultDate))
+last.N1N2.run<-subset(new.report, TestResultDate==last.run)
+last.N1N2.run.aboveLOD<-subset(last.N1N2.run, N1SARSCoV2BelowLOD == "no" | N2SARSCoV2BelowLOD == "no")
+if(nrow(aboveLOD)!=0){
+   print(paste0("CV above BLD for N1N2 (in most recent run): ", last.N1N2.run.aboveLOD$SampleID))
+} else {
+   print("No sample above BLD for N1N2 in the most recent run.")
+}
+```
+
+
+
 Prepare comparison export
 ```{r}
 if(length(modified.CV)!=0){

@@ -84,10 +84,10 @@ dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", curren
 dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/"))
 
 rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("UWM_SARS-CoV-2_report*.Rmd"))
-file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", rmd), overwrite = TRUE, copy.mode = TRUE)
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", gsub("_OPEN_KNIT", "_DO_NOT_MODIFY", rmd)), overwrite = TRUE, copy.mode = TRUE)
 
 rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("DatabaseCuration_DO_NOT_MODIFY*.Rmd"))
-file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", gsub("_DO_NOT_MODIFY", "", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/", gsub("_DO_NOT_MODIFY", "_OPEN_MODIFY_KNIT", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
 
 file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
@@ -1003,6 +1003,7 @@ HF183.plot
 
 pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/HF183_concentration.pdf")); HF183.plot; dev.off()
 ```
+
 
 
 
