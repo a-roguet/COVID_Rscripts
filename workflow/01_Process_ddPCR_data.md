@@ -1,6 +1,6 @@
 # Process ddPCR data
 
-Adelaide Roguet 3-25-21
+Adelaide Roguet 7-8-21
 
 
 
@@ -289,7 +289,15 @@ It is most likely that the name you entered for the .csv file is incorrect :-)
 
 
 
+- Error in if (samples[which(samples$Well == wellTemp), c("target" == : argument is of length zero Calls <Anonymous> ... withVisible -> eval -> eval -> 
 
+  <iframe src="https://drive.google.com/file/d/1LWd3vys0F4w1IgQditOC7dSElbh22UHB/preview" width="640" height="480" allow="autoplay"></iframe>
+
+  ```
+  It is most likely that you imported an empty amplification file. Did you imported a filler?
+  ```
+
+  
 
 + No error during the processing of the data, but on the html/report file, I can see that all/some of the detected amplification files have not been processed. 
 <iframe src="https://drive.google.com/file/d/1xm2O1q16vOvcyoM8vduIiGnRuzq7OO3Q/preview" width="640" height="480"></iframe>
