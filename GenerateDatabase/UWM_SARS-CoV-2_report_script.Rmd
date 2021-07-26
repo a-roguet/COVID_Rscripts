@@ -66,6 +66,7 @@ metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters
 source(metadata_function)
 compile_WWTPs_parameters()
 metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled_DO_NOT_TOUCH.xlsx", sheet = "data", colNames = TRUE)
+if(length(which(duplicated(metadata.parameter$CV)==TRUE)) != 0) {stop("Two samples have same CV number in WWTP parameters!")}
 ```
 
 Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
@@ -94,7 +95,7 @@ copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=past
 file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time1, "/RawData/WWTP_Methods_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 ```
 
-
+ 
 ***
 
 # Format data
@@ -687,8 +688,8 @@ merging.check[5,]<-c("nrow(NTC.run.melt)=nrow(NTC.N2.run.melt.summary)", isTRUE(
 merging.check[6,]<-c("nrow(PV.metadata)=nrow(PV.df)", isTRUE(nrow(PV.metadata)==nrow(PV.df)))
 colnames(merging.check)<-c("function","result")
 merging.check.FALSE<-which(merging.check[,2]==FALSE)
-merging.check.FALSE<-merging.check[merging.check.FALSE, ]
-if(isTRUE(nrow(merging.check.FALSE)>0)==TRUE){kable(merging.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+merging.check.FALSE<-as.data.frame(merging.check[merging.check.FALSE, 1])
+if(isTRUE(nrow(merging.check.FALSE)==0)==TRUE) {cat("Everything is okay")} else {kable(merging.check.FALSE, format = "simple")}
 ```
 
 
@@ -745,8 +746,8 @@ variable.check[46,]<-c("class(lower.upper$Positives_max)=numeric", isTRUE(class(
 
 colnames(variable.check)<-c("function","result")
 variable.check.FALSE<-which(variable.check[,2]==FALSE)
-variable.check.FALSE<-merging.check[variable.check.FALSE, ]
-if(isTRUE(nrow(variable.check.FALSE)>0)==TRUE){kable(variable.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+variable.check.FALSE<-as.data.frame(merging.check[variable.check.FALSE, 1])
+if(isTRUE(nrow(variable.check.FALSE)==0)==TRUE) {cat("Everything is okay")} else {kable(variable.check.FALSE, format = "simple")} 
 
 ```
 
@@ -777,8 +778,8 @@ ddPCR.qPCR.check[21,]<-c("class(ddPCR.qPCR$HF183)=numeric", isTRUE(class(ddPCR.q
 ddPCR.qPCR.check[22,]<-c("class(ddPCR.qPCR$BCoV.log10.per.mL.sewage)=numeric", isTRUE(class(ddPCR.qPCR$BCoV.log10.per.mL.sewage)=="numeric"))
 colnames(ddPCR.qPCR.check)<-c("function","result")
 ddPCR.qPCR.check.FALSE<-which(ddPCR.qPCR.check[,2]==FALSE)
-ddPCR.qPCR.check.FALSE<-merging.check[ddPCR.qPCR.check.FALSE, ]
-if(isTRUE(nrow(ddPCR.qPCR.check.FALSE)>0)==TRUE){kable(ddPCR.qPCR.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+ddPCR.qPCR.check.FALSE<-as.data.frame(merging.check[ddPCR.qPCR.check.FALSE, 1])
+if(isTRUE(nrow(ddPCR.qPCR.check.FALSE)==0)==TRUE){cat("Everything is okay")} else {kable(ddPCR.qPCR.check.FALSE, format = "simple")} 
 
 ```
 
@@ -827,8 +828,8 @@ PV.df.check[37,]<-c("class(PV.df$NTC_N2_amplified_count)=numeric", isTRUE(class(
 PV.df.check[38,]<-c("class(PV.df$BCoV_log10_mL)=numeric", isTRUE(class(PV.df$BCoV_log10_mL)=="numeric"))
 colnames(PV.df.check)<-c("function","result")
 PV.df.check.FALSE<-which(PV.df.check[,2]==FALSE)
-PV.df.check.FALSE<-merging.check[PV.df.check.FALSE, ]
-if(isTRUE(nrow(PV.df.check.FALSE)>0)==TRUE){kable(PV.df.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+PV.df.check.FALSE<-as.data.frame(merging.check[PV.df.check.FALSE, 1])
+if(isTRUE(nrow(PV.df.check.FALSE)==0)==TRUE){cat("Everything is okay")} else {kable(PV.df.check.FALSE, format = "simple")}
 
 ```
 
@@ -897,8 +898,8 @@ report.check[58,]<-c("class(report$DO)=numeric", isTRUE(class(report$DO)=="numer
 report.check[59,]<-c("class(report$BCoVSpikeConc)=numeric", isTRUE(class(report$BCoVSpikeConc)=="numeric"))
 colnames(report.check)<-c("function","result")
 report.check.FALSE<-which(report.check[,2]==FALSE)
-report.check.FALSE<-merging.check[report.check.FALSE, ]
-if(isTRUE(nrow(report.check.FALSE)>0)==TRUE){kable(report.check.FALSE, format = "simple")} else {cat("Everything is okay")}
+report.check.FALSE<-as.data.frame(merging.check[report.check.FALSE, 1])
+if(isTRUE(nrow(report.check.FALSE)==0)==TRUE){cat("Everything is okay")} else {kable(report.check.FALSE, format = "simple")}
 
 ```
 
