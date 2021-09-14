@@ -66,7 +66,7 @@ It describes:
 
 2. Unzip the file, and copy the content of the folder **ddPCR** into the folder containing the ddPCR data you want to process
 
-
+PS: Since only AR was updating the code, the scripts are also available in the folder **_code** in the **ddPCR data** folder
 
 
 
@@ -114,47 +114,61 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
 ## Quality control #1
 
-1. Make sure the number of processed samples per target match the number of samples expected.
+1. On the html file that automatically opens at the end of the ddPCR process (see Figure 5 above), make sure the number of processed samples per target match the number of samples expected. 
 
-2. **FOR EACH SAMPLE**, visually check the **split between the positive and negative droplets** on 1D cluster plots for singleplex and the **correct cluster classification** on 2D cluster plots for multiplex assays. Something is incorrect, flag it (see point #5 below) (Figures 6, 7 and 8).
+   
+
+2. Open **results_final.csv** (Figure 6). The columns you will need in this section are: **Flag.***, **Comment**, **NeedRerun**, **Sample**, **Target**, and **PositivesDroplets**.
+
+   > It is in that file that we will report all bad samples, why we report them, etc.
+
+   
+
+3. **FOR EACH SAMPLE**, visually check (pdf plots):
+
+   - For **singleplex**, the **split between the positive and negative droplets** on the 1D cluster plots.
+
+   - For **multiplex**, the **correct cluster classification** on the 2D cluster plot. Something is incorrect, flag it (see point #8 below) (Figures 7-10).
+
+     
+
+4. If the clusterization (multiplex) is not correct, but it seems that it could be easily fixed, reprocess the raw data using a different parameter, i.e., changing in the csv file the target name. It will process the samples using different setting than can make the clusterization more successful. 
+
+   > BCoV/BRSV to N1/N2
+   >
+   >  N1/N2 to N1s/N2s ("s" for sludge), etc.
 
    > BCoV/BRSV split is made by QuantaSoft. R is just reading BioRad's clusters. So, if the clusterization is wrong, don't blame Adelaide or the R package :-)
 
-3. **FOR EACH SAMPLE**, report any "weird pattern" (see point #5 below) (Figure 9).
+   
+
+5. If the split/clusterization is bad because of a weird pattern, report "**weird pattern**" in the **comment** column and add "**need_rerun**" in the column **NeedRerun** (see point #5 below) (Figure 6).
 
    > It is most likely that weird patters are associated with too few accepted droplets (<10,000).
+   
+   
+
+
+6. Check that **NTC are negatives** or **below the limit of detection** (2 droplets max). If not, then rerun the whole plate! No exceptions. Sorry :-(
 
    
 
-4. Check that **NTC are negatives** or below the limit of detection (3 droplets for N1 or N2). If not, then rerun the whole plate!
+7. More quality controls:
 
-   
+**For N1/N2:**
 
-5. If any of the points above have been violated, or anything caught you eyes, report it in the **results_final.csv** file in the column **comment** and add **"need_rerun"** in the column **NeedRerun**. FOR MULTIPLEX ASSAYS, **do not forget** to report for both N1 and N2, or BCoV and BRSV (Figure 10). 
+- Check the number of positive droplets for the standards 1:8. At least one of the two replicate should be ~100 droplets (80-120 droplets). No? Ask the person who did the plate if something could explain the high/low droplet number. If nothing can explain it, rerun the whole plate! Sorry :-(
+- Check the concentration observed in the dupicate sample (if any) is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" in the "NeedRerun" column. But if you want to ignore that sample for that specific reason, add "duplicate" in the "NeedRerun" column
 
+**For BCoV/BRSV:**
 
-
-
-<iframe src="https://drive.google.com/file/d/1w02PKbY4ddEvA94SvLBAS5optK5Gsidr/preview" width="640" height="480"></iframe>
-   **Figure 6** Example of **correct** splits for singleplex (a) and for multiplex (b).
-
-
-
-<iframe src="https://drive.google.com/file/d/1EZZibfUHtQTuteKYKisEphcwER_zHIY1/preview" width="640" height="480"></iframe>
-
-   **Figure 7** Example of **incorrect** spits for singleplex (a) and multiplex (b).
+- Check that the concentration in the **BRSV only** wells are about the same.
 
 
 
-<iframe src="https://drive.google.com/file/d/1wYFAaeqqdjMTa2mWGc-cxiu0t6Ws8l4k/preview" width="640" height="480"></iframe>
-
-​    **Figure 8** More example of **incorrect** spits for multiplexed assays.
 
 
-
-<iframe src="https://drive.google.com/file/d/1fe1XlIKq2yauwKh_E-C0UgnX5zb-FNLp/preview" width="640" height="480"></iframe>
-
-​    **Figure 9**  Example of **"weird patterns"** for multiplexed assays.
+8. If any of the points above have been violated or anything caught you eyes, report it in the **results_final.csv** file in the column **comment** and add **"need_rerun"** in the column **NeedRerun**. FOR MULTIPLEX ASSAYS, **do not forget** to report for both N1 and N2, BCoV and BRSV (Figure 6). 
 
 
 
@@ -164,7 +178,37 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
 <iframe src="https://drive.google.com/file/d/1QrKk-ac0t08CsgrGhrYkA5z0DVbHEg7_/preview" width="640" height="480"></iframe>
 
-​    **Figure 10**  Example of a sample (N1/N2 assay) that has been manually flagged as "weird patterns"
+​    **Figure 6**  Example of a **results_final.csv** file. Here, it highlights a sample (N1/N2 assay) that has been manually flagged as "weird patterns"
+
+
+
+
+<iframe src="https://drive.google.com/file/d/1w02PKbY4ddEvA94SvLBAS5optK5Gsidr/preview" width="640" height="480"></iframe>
+   **Figure 7** Example of **correct** splits for singleplex (a) and for multiplex (b).
+
+
+
+<iframe src="https://drive.google.com/file/d/1EZZibfUHtQTuteKYKisEphcwER_zHIY1/preview" width="640" height="480"></iframe>
+
+   **Figure 8** Example of **incorrect** spits for singleplex (a) and multiplex (b).
+
+
+
+<iframe src="https://drive.google.com/file/d/1wYFAaeqqdjMTa2mWGc-cxiu0t6Ws8l4k/preview" width="640" height="480"></iframe>
+
+​    **Figure 9** More example of **incorrect** spits for multiplexed assays.
+
+
+
+<iframe src="https://drive.google.com/file/d/1fe1XlIKq2yauwKh_E-C0UgnX5zb-FNLp/preview" width="640" height="480"></iframe>
+
+​    **Figure 10**  Example of **"weird patterns"** for multiplexed assays.
+
+
+
+
+
+
 
 
 
@@ -186,7 +230,7 @@ Once the script has been run, RStudio should open an html file. You can open tha
 
   - **1x csv file per plate** compiling all the results of all assays performed on the plate
 
-    > **results_final.csv**
+    > **results_final.csv** or **results_VARIANT_FINAL.csv** for the variants 
 
 - **For singleplex assays:**
 
@@ -302,7 +346,7 @@ It is most likely that the name you entered for the .csv file is incorrect :-)
 + No error during the processing of the data, but on the html/report file, I can see that all/some of the detected amplification files have not been processed. 
 <iframe src="https://drive.google.com/file/d/1xm2O1q16vOvcyoM8vduIiGnRuzq7OO3Q/preview" width="640" height="480"></iframe>
 ```
-Check in the sample metadata .csv file that all the data are here, i.e., channel 1 and/or channel 2, target correctly spelled, etc.
+Check in the sample metadata .csv file that all the information are correctly entered, i.e., channel 1 and/or channel 2, target correctly spelled, etc.
 ```
 
 

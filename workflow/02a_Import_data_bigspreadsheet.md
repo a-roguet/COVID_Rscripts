@@ -89,28 +89,17 @@ To make sure the sample ID is correct, you can look at the column B and C, if th
  	
 
 
-## Quality control #2
+## Quality control #2 (everything should be good to go at this point!)
 
-1. Among the dark grey columns, if any cell turned red among the columns "Positive/Accepted droplet ratio" (column F), "Total droplets" (column G), "FAM/HEX ratio" (column H; we allow a ratio FAM/HEX < 4 ), the column "NeedRerun" should displays "need_rerun". However, if you manually added "weird pattern" in the column "Comment" (column I), then you have to add **"need_rerun"** in the "NeedRerun" column (column J).
+1. If a **NTC** is flagged because it has not enough accepted droplets, **remove** the "**need_rerun**".
+
+   
+
+2. Among the dark grey columns, if any cell turned red among the columns "Positive/Accepted droplet ratio" (column F), "Total droplets" (column G), "FAM/HEX ratio" (column H; we allow a ratio FAM/HEX < 4 ), the column "NeedRerun" should displays "need_rerun". However, if you manually added "weird pattern" in the column "Comment" (column I), then you have to add **"need_rerun"** in the "NeedRerun" column (column J).
 
 > For any other reasons (e.g., during downstream analysis) a sample has to be "removed" to avoid being processed and send to DHS/CDC, then just add **"need_rerun"** in the "NeedRerun" column (column J).
 
 
-
-2. Check that all NTCs are negative or below the limit of detection (2 droplets max for N1 and N2). If not, flag it!
-
-   >  You should have spotted that issue during the quality control #1. Because if the NTCs are positive, then you should not have gone that far away in the workflow!
-
-   
-
-3. **For N1/N2:**
-   - Check the number of positive droplets for the standards 1:8. It should be ~100 droplets. No? Ask the person who did the plate if something could explain the high/low droplet number. If nothing can explain it, flag it!
-   - Check the concentration observed in the dupicate sample (if any) is the same than the one during the last run. Overall, I keep the value of the duplicate sample. I do not add "duplicate" in the "NeedRerun" column. But if you want to ignore that sample for that specific reason, add "duplicate" in the "NeedRerun" column
-     
-
-   **For BCoV/BRSV:**
-   
-   - Check that the concentration in the **BRSV only** wells are about the same.
 
 
 

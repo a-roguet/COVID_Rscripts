@@ -156,13 +156,13 @@ Analyse_ddPCR_results <- function() {
   ## Create temporary folders and copy raw files in them
   unlink("./*/", recursive=TRUE)
 
-  dir.create("temp_all_files"); dir.create("temp_N1N2multiplex"); dir.create("temp_N1N2sludgemultiplex"); dir.create("temp_BCOVBRSVmultiplex"); dir.create("temp_FAMsingleplex"); dir.create("temp_HEXsingleplex"); dir.create("temp_variantsmultiplex"); dir.create("temp_variants944multiplex"); dir.create("temp_variants681multiplex")
+  dir.create("temp_all_files"); dir.create("temp_N1N2multiplex"); dir.create("temp_N1N2sludgemultiplex"); dir.create("temp_BCOVBRSVmultiplex"); dir.create("temp_FAMsingleplex"); dir.create("temp_HEXsingleplex"); dir.create("temp_variantsmultiplex"); dir.create("temp_variants944multiplex"); dir.create("temp_variants681multiplex"); dir.create("temp_InfABmultiplex")
   dataRawFiles <- dir(".", "*_Amplitude.csv", ignore.case = TRUE, all.files = TRUE)
   file.copy(dataRawFiles, "./temp_all_files", overwrite = TRUE)
   
   ## Split the files between singleplex, N1/N2 multiplex, N1/N2 sludge multiplex and BCoV/BRSV multiplex
   dataTempFiles <- dir("./temp_all_files/", "*.csv", ignore.case = TRUE, all.files = TRUE)
-  FAMsingleplex=HEXsingleplex=N1N2multiplex=N1N2Sludgemultiplex=BCoVBRSVmultiplex=variantmultiplex=variant944multiplex=variant681multiplex=0
+  FAMsingleplex=HEXsingleplex=N1N2multiplex=N1N2Sludgemultiplex=BCoVBRSVmultiplex=variantmultiplex=variant944multiplex=variant681multiplex=InfABmultiplex=0
   
   for(j in 1:length(dataTempFiles)) {
     fileTemp<-dataTempFiles[j]
@@ -187,6 +187,9 @@ Analyse_ddPCR_results <- function() {
         } else if(grepl("BCoV_BRSV", samples[which(samples$Well == wellTemp), c("target")], fixed = TRUE)){
           BCoVBRSVmultiplex=BCoVBRSVmultiplex+1
           write.table(temp, paste0("./temp_BCOVBRSVmultiplex/", dataTempFiles[j]), quote = FALSE, sep = ",", col.names = TRUE, row.names = FALSE)
+        } else if(grepl("INFA_INFB", samples[which(samples$Well == wellTemp), c("target")], fixed = TRUE)){
+          InfABmultiplex=InfABmultiplex+1
+          write.table(temp, paste0("./temp_InfABmultiplex/", dataTempFiles[j]), quote = FALSE, sep = ",", col.names = TRUE, row.names = FALSE)
         } else if(grepl("944M_944W", samples[which(samples$Well == wellTemp), c("target")], fixed = TRUE)){
           variant944multiplex=variant944multiplex+1
           write.table(temp, paste0("./temp_variants944multiplex/", dataTempFiles[j]), quote = FALSE, sep = ",", col.names = TRUE, row.names = FALSE)
@@ -200,7 +203,7 @@ Analyse_ddPCR_results <- function() {
       }
     }
   
-  No.BCoVBRSV.samples=No.N1N2.samples=No.N1N2Sludge.samples=No.FAM.samples=No.HEX.samples=No.variant.samples=No.variant944.samples=No.variant681.samples=0
+  No.BCoVBRSV.samples=No.N1N2.samples=No.N1N2Sludge.samples=No.FAM.samples=No.HEX.samples=No.variant.samples=No.variant944.samples=No.variant681.samples=No.InfAB.samples=0
   samples$target<-str_replace(samples$target, "N1S", "N1"); samples$target<-str_replace(samples$target, "N2S", "N2")
   
   
@@ -239,6 +242,8 @@ Analyse_ddPCR_results <- function() {
       well<-plate.genuine.multiplex[[well_ID]]
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
+      
       
       #dropletPlot(well)
       
@@ -389,6 +394,7 @@ Analyse_ddPCR_results <- function() {
       well<-plate.sludge.genuine.multiplex[[well_ID]]
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
       
       #dropletPlot(well)
       
@@ -539,6 +545,7 @@ Analyse_ddPCR_results <- function() {
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_target<-as.numeric(gsub("([0-9]+).*$", "\\1", strsplit(as.character(samples[which(samples$Well == well_ID), 3]), '_' ,fixed=TRUE)[[1]][1]))
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
       print(paste0(well_ID, " - ", well_target,  " variant"))
       list.variant[i, ]<-well_target
       #dropletPlot(well)
@@ -655,7 +662,8 @@ Analyse_ddPCR_results <- function() {
     results.variant.multiplex.summarized<-cbind(row.names(results.variant.multiplex), results.variant.multiplex); names(results.variant.multiplex.summarized)[1]<-"Well"
     results.variant.multiplex.summarized<-setDT(as.data.frame(results.variant.multiplex.export))[as.data.frame(results.variant.multiplex.summarized), on="Well"]
     results.variant.multiplex.summarized$BioRadAssay<-gsub("[^0-9.-]", "", results.variant.multiplex.summarized$Target)
-    results.variant.multiplex.summarized<-results.variant.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
+    results.variant.multiplex.summarized$Comment<-""
+    results.variant.multiplex.summarized<-results.variant.multiplex.summarized[,c("Run","Well", "Comment", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
     results.variant.multiplex.summarized<-unique(results.variant.multiplex.summarized)
     
     
@@ -708,6 +716,7 @@ Analyse_ddPCR_results <- function() {
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_target<-as.numeric(gsub("([0-9]+).*$", "\\1", strsplit(as.character(samples[which(samples$Well == well_ID), 3]), '_' ,fixed=TRUE)[[1]][1]))
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
       print(paste0(well_ID, " - ", well_target,  " variant"))
       list.variant944[i, ]<-well_target
       #dropletPlot(well)
@@ -824,7 +833,8 @@ Analyse_ddPCR_results <- function() {
     results.variant944.multiplex.summarized<-cbind(row.names(results.variant944.multiplex), results.variant944.multiplex); names(results.variant944.multiplex.summarized)[1]<-"Well"
     results.variant944.multiplex.summarized<-setDT(as.data.frame(results.variant944.multiplex.export))[as.data.frame(results.variant944.multiplex.summarized), on="Well"]
     results.variant944.multiplex.summarized$BioRadAssay<-gsub("[^0-9.-]", "", results.variant944.multiplex.summarized$Target)
-    results.variant944.multiplex.summarized<-results.variant944.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
+    results.variant944.multiplex.summarized$Comment<-""
+    results.variant944.multiplex.summarized<-results.variant944.multiplex.summarized[,c("Run","Well", "Comment", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
     results.variant944.multiplex.summarized<-unique(results.variant944.multiplex.summarized)
     
     
@@ -878,6 +888,7 @@ Analyse_ddPCR_results <- function() {
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_target<-as.numeric(gsub("([0-9]+).*$", "\\1", strsplit(as.character(samples[which(samples$Well == well_ID), 3]), '_' ,fixed=TRUE)[[1]][1]))
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
       print(paste0(well_ID, " - ", well_target,  " variant"))
       list.variant681[i, ]<-well_target
       dropletPlot(well)
@@ -994,7 +1005,8 @@ Analyse_ddPCR_results <- function() {
     results.variant681.multiplex.summarized<-cbind(row.names(results.variant681.multiplex), results.variant681.multiplex); names(results.variant681.multiplex.summarized)[1]<-"Well"
     results.variant681.multiplex.summarized<-setDT(as.data.frame(results.variant681.multiplex.export))[as.data.frame(results.variant681.multiplex.summarized), on="Well"]
     results.variant681.multiplex.summarized$BioRadAssay<-gsub("[^0-9.-]", "", results.variant681.multiplex.summarized$Target)
-    results.variant681.multiplex.summarized<-results.variant681.multiplex.summarized[,c("Run","Well", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
+    results.variant681.multiplex.summarized$Comment<-""
+    results.variant681.multiplex.summarized<-results.variant681.multiplex.summarized[,c("Run","Well", "Comment", "NeedRerun", "Sample", "BioRadAssay", "MPositives", "WPositives", "AcceptedDroplets", "Flag.positive.droplets", "Flag.total.droplets")]
     results.variant681.multiplex.summarized<-unique(results.variant681.multiplex.summarized)
     
     
@@ -1039,6 +1051,7 @@ if(BCoVBRSVmultiplex>0){
     well<-plate.genuine.multiplex[[well_ID]]
     well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
     well_sample_plot<-str_replace(well_sample, ":", "to")
+    well_sample_plot<-str_replace(well_sample_plot, "/", "-")
     
     ## Remove the rain between the clusters
     #well <- sdRain(well, cMethod="Cluster", errorLevel = 4) #5 = default 
@@ -1112,6 +1125,157 @@ if(BCoVBRSVmultiplex>0){
 
   
 
+  
+  
+  #####  Read the InfA/InfB multiplex data - INFLUENT ###### 
+  if(InfABmultiplex>0){
+    print("InfA/InfB multiplex sample(s) detected")
+    plate.genuine.multiplex <- ddpcrPlate(well="temp_InfABmultiplex/.")
+    No.InfAB.samples<-length(names(plate.genuine.multiplex))
+    names(plate.genuine.multiplex) # list all the InfA/InfB wells
+    plate.cluster <- plate.genuine.multiplex # duplicate "plate.genuine". "plate.cluster" will store the k-means clusters
+    
+    ## Display original clusters
+    #commonClassificationMethod(plate.genuine.multiplex) # 
+    #facetPlot(plate.genuine.multiplex, cMethod="Cluster") # droplets per well
+    
+    
+    ## Define 4 clusters (i.e. NN (negative), PN (InfA), PP (InfA/InfB) and NP (InfB) for each well)
+    for(i in 1:No.InfAB.samples) {
+      
+      ## Preparation
+      well = 0
+      four.clusters.NN.Ch1 = four.clusters.genuine.NN.Ch1
+      four.clusters.NN.Ch2 = four.clusters.genuine.NN.Ch2
+      four.clusters <- four.clusters.genuine
+      well_ID=as.character(names(plate.genuine.multiplex)[i])
+      print(paste0(well_ID, " - InfA/InfB"))
+      well<-plate.genuine.multiplex[[well_ID]]
+      well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
+      well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
+      
+      #dropletPlot(well)
+      
+      ## Define the center of the Negative droplets for the well
+      well.NN <- well@dropletAmplitudes[which(well@classification$Cluster == "NN"),]
+      well.NN.Ch1<-mean(well.NN$Ch1.Amplitude)
+      well.NN.Ch2<-mean(well.NN$Ch2.Amplitude)
+      
+      ## Determine the difference of origin between the artificial and the real sample (i.e., ch1 and ch2)
+      ch1<-four.clusters.NN.Ch1-well.NN.Ch1
+      ch2<-four.clusters.NN.Ch2-well.NN.Ch2
+      
+      ## Correct the position of the artificial sample to match the real sample
+      four.clusters@dropletAmplitudes$Ch1.Amplitude<-four.clusters@dropletAmplitudes$Ch1.Amplitude-ch1
+      four.clusters@dropletAmplitudes$Ch2.Amplitude<-four.clusters@dropletAmplitudes$Ch2.Amplitude-ch2
+      four.clusters@classification$Cluster<-"artificial"
+      
+      ## Add artificial sample to the real sample
+      well@classification<-rbind(four.clusters@classification, well@classification)
+      well@dropletAmplitudes<-rbind(four.clusters@dropletAmplitudes, well@dropletAmplitudes)
+      #dropletPlot(well)
+      
+      ## Define the 4 clusters (NN (negative), PN (InfA), PP (InfA/InfB) and NP (InfB))
+      well <- kmeansClassify(well, 
+                             centres=matrix(c(2000-ch1, 2000-ch2,    2000-ch1, 4500-ch2,   8000-ch1, 2500-ch2,   8000-ch1, 6000-ch2), ncol=2, byrow=TRUE))
+      #dropletPlot(well, cMethod="kmeans")
+      
+      ## Remove the rain between the clusters
+      well <- sdRain(well, cMethod="kmeans", errorLevel = 5) #5 = default 
+      #dropletPlot(well, cMethod="kmeansSdRain")
+      
+      ## Remove artificial droplets
+      well@dropletAmplitudes<-well@dropletAmplitudes[which(well@classification$Cluster != "artificial"),]
+      well@classification<-well@classification[which(well@classification$Cluster != "artificial"),]
+      #dropletPlot(well, cMethod="kmeansSdRain")
+      
+      
+      ## If NA are generated during the last step, replace NA by kmeans classification
+      na<-which(is.na(well@classification$kmeansSdRain))
+      well@classification$kmeansSdRain[na]<-well@classification$kmeans[na]
+      
+      ## Add info to the plate
+      plate.cluster[[well_ID]]<-well
+      
+      ## Print plots
+      pdf(paste0("multiplex_InfAB_", well_ID, "_", well_sample_plot, "_2D.pdf"), width=8, height=8)
+      print(dropletPlot(well, cMethod="kmeansSdRain"))
+      dev.off()
+      
+      well.plot<-as.data.frame(cbind(well@dropletAmplitudes$Ch1.Amplitude, well@dropletAmplitudes$Ch2.Amplitude, well@classification$kmeansSdRain))
+      names(well.plot)<-c("Ch1.Amplitude", "Ch2.Amplitude", "kmeansSdRain")
+      well.plot$kmeansSdRain<-gsub(1, "negative", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(2, "HEX", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(3, "FAM", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(4, "FAM-HEX", well.plot$kmeansSdRain)
+      well.plot$kmeansSdRain<-gsub(5, "rain", well.plot$kmeansSdRain)
+      
+      pdf(paste0("multiplex_InfAB_", well_ID, "_", well_sample_plot, "_1D_ch1.pdf"), width=8, height=8)
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch1.Amplitude, colour = as.factor(kmeansSdRain))) + xlab("droplets (0-total accepted droplets)") + geom_point() + scale_color_manual(name = "Droplet clusters:", values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
+      dev.off()
+      pdf(paste0("multiplex_InfAB_", well_ID, "_", well_sample_plot, "_1D_ch2.pdf"), width=8, height=8)
+      print(ggplot(well.plot, aes(runif(nrow(well.plot),1,nrow(well.plot)), Ch2.Amplitude, colour = as.factor(kmeansSdRain))) + xlab("droplets (0-total accepted droplets)") + geom_point() + scale_color_manual(name = "Droplet clusters:", values = c("FAM" = "#009f74", "HEX"="#cb79a6", "FAM-HEX"="#edbb5b", "negative"="#0073b3", "rain"="#c1c1c1")))
+      dev.off()
+    }
+    
+    ## Generate multiplex data
+    print(paste0(No.InfAB.samples, " InfA/InfB files processed"))
+    cat(sep="\n\n")
+    print("Compiling the output files...")
+    results.InfAB.multiplex<-plateSummary(plate.cluster, cMethod="kmeansSdRain", ch1Label = "InfA", ch2Label = "InfB")
+    results.InfAB.multiplex$FAM.HEX.difference<-round(results.InfAB.multiplex[,10]/results.InfAB.multiplex[,11], digits = 2)
+    results.InfAB.multiplex$flag.FAM.HEX.difference<-""
+    
+    
+    ## Split data to get 1 row = 1 assay
+    results.InfAB.multiplex.FAM<-results.InfAB.multiplex[, c(1,2,5,6,7,10,12,18)]
+    results.InfAB.multiplex.FAM$Target<-"InfA"
+    results.InfAB.multiplex.FAM$DyeName<-"FAM"
+    results.InfAB.multiplex.FAM$Well<-row.names(results.InfAB.multiplex.FAM)
+    results.InfAB.multiplex.HEX<-results.InfAB.multiplex[, c(1,3,5,8,9,11,13,18)]
+    results.InfAB.multiplex.HEX$Target<-"InfB"
+    results.InfAB.multiplex.HEX$DyeName<-"HEX"
+    results.InfAB.multiplex.HEX$Well<-row.names(results.InfAB.multiplex.HEX)
+    
+    results.InfAB.multiplex.export<-rbind(results.InfAB.multiplex.FAM,setnames(results.InfAB.multiplex.HEX,names(results.InfAB.multiplex.FAM)))
+    names(results.InfAB.multiplex.export)<-c("PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Conc(copies/µL)", "Copies/20µLWell", "Flag.FAM_HEX.difference", "Target", "DyeName", "Well")
+    results.InfAB.multiplex.export$Flag.positive.droplets<-ifelse(results.InfAB.multiplex.export$PositivesDroplets/results.InfAB.multiplex.export$AcceptedDroplets>0.7,paste0("too many positive droplets (", round(results.InfAB.multiplex.export$PositivesDroplets/results.InfAB.multiplex.export$AcceptedDroplets*100, digits = 0), ")"), "okay")
+    results.InfAB.multiplex.export$Flag.total.droplets<-ifelse(results.InfAB.multiplex.export$AcceptedDroplets<=10000,"low number of droplets", "okay")
+    results.InfAB.multiplex.export$Run<-run_ID
+    results.InfAB.multiplex.export$Comment<-""
+    #print(paste0("Number of row before sample name transformation: ", nrow(results.InfAB.multiplex.export)))
+    results.InfAB.multiplex.export<-setDT(samples)[results.InfAB.multiplex.export, on="Well"]
+    #print(paste0("Number of row after sample name transformation (should the same): ", nrow(results.InfAB.multiplex.export)))
+    results.InfAB.multiplex.export<-results.InfAB.multiplex.export[,c("Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets", "Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment")]
+    results.InfAB.multiplex.export$NeedRerun<-ifelse(results.InfAB.multiplex.export$Flag.positive.droplets=="okay" & results.InfAB.multiplex.export$Flag.total.droplets == "okay"  & results.InfAB.multiplex.export$Comment == "", "", "need_rerun")
+    results.InfAB.multiplex.export<-results.InfAB.multiplex.export[,c("Flag.positive.droplets", "Flag.total.droplets", "Flag.FAM_HEX.difference", "Comment", "NeedRerun", "Run", "Well", "Sample", "Target", "Conc(copies/µL)", "DyeName", "Copies/20µLWell", "PP", "PN_NP", "AcceptedDroplets", "PositivesDroplets", "NegativesDroplets")]
+    # If there is only 1 sample, it is to avoid the Well to be called 1, and Sample to be called NA
+    if(nrow(results.InfAB.multiplex.export)==2){
+      results.InfAB.multiplex.export[, c("Well")]<-well_ID
+      results.InfAB.multiplex.export[, c("Sample")]<-well_sample
+      
+    }
+    
+    
+    ## Export the data ## 
+    write.table(results.InfAB.multiplex.export, paste0("results_InfAB.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")
+    write.table(results.InfAB.multiplex, paste0("details_results_InfAB.csv"), quote = FALSE, row.names = TRUE, col.names = TRUE, sep = ",")
+    saveRDS(plate.cluster, file = "plate_InfAB.RData")
+    
+    print("done!")
+    cat(sep="\n\n")
+    cat(sep="\n\n")
+    
+  }
+  
+  
+  
+  
+  
+  
+  
+  
 
 
 
@@ -1132,6 +1296,7 @@ if(BCoVBRSVmultiplex>0){
       well<-plate.genuine.FAMsingleplex[[well_ID]]
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
       
       ## Print plots
       well.plot<-as.data.frame(cbind(well@dropletAmplitudes$Ch1.Amplitude, well@classification$Cluster))
@@ -1200,6 +1365,8 @@ if(BCoVBRSVmultiplex>0){
       well<-plate.genuine.HEXsingleplex[[well_ID]]
       well_sample<-as.character(samples[which(samples$Well == well_ID), 2])
       well_sample_plot<-str_replace(well_sample, ":", "to")
+      well_sample_plot<-str_replace(well_sample_plot, "/", "-")
+      
       
       ## Print plots
       well.plot<-as.data.frame(cbind(well@dropletAmplitudes$Ch2.Amplitude, well@classification$Cluster))
@@ -1255,7 +1422,8 @@ if(BCoVBRSVmultiplex>0){
   #####  Merge all final databases  #####
   final.results <- rbind(if(exists("results.N1N2.multiplex.export")) results.N1N2.multiplex.export,
                          if(exists("results.N1N2sludge.multiplex.export")) results.N1N2sludge.multiplex.export, 
-                         if(exists("results.BCOVBRSV.multiplex.export")) results.BCOVBRSV.multiplex.export, 
+                         if(exists("results.BCOVBRSV.multiplex.export")) results.BCOVBRSV.multiplex.export,
+                         if(exists("results.InfAB.multiplex.export")) results.InfAB.multiplex.export, 
                          if(exists("results.FAMsingleplex.export")) results.FAMsingleplex.export, 
                          if(exists("results.HEXsingleplex.export")) results.HEXsingleplex.export)
   if(isTRUE(is.null(final.results)==FALSE)){write.table(final.results, paste0("results_final.csv"), quote = FALSE, row.names = FALSE, col.names = TRUE, sep = ",")}
@@ -1282,7 +1450,7 @@ if(BCoVBRSVmultiplex>0){
     
   ##### Recap number of samples ######
   print(paste0(length(dataRawFiles), " raw amplification files detected"))
-  print(paste0(No.BCoVBRSV.samples+No.N1N2.samples+No.N1N2Sludge.samples+No.FAM.samples+No.HEX.samples+No.variant.samples+No.variant944.samples+No.variant681.samples, " files processed at the end"))
+  print(paste0(No.BCoVBRSV.samples+No.N1N2.samples+No.N1N2Sludge.samples+No.FAM.samples+No.HEX.samples+No.variant.samples+No.variant944.samples+No.variant681.samples+No.InfAB.samples, " files processed at the end"))
 
   
   }

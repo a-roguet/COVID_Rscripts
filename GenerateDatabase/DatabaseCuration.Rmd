@@ -20,6 +20,7 @@ ls()
 Load packages and function
 ```{r echo=TRUE, warning=FALSE, message=FALSE}
 library(dplyr)
+'%!in%' <- function(x,y)!('%in%'(x,y)) 
 ```
 
 ***
@@ -27,17 +28,16 @@ library(dplyr)
 
 Indicate the name of the last report uploaded on the DHS/CDC server
 ```{r}
-foldername.last.CDCDHS.report.sent<-"XXXX"
+foldername.last.CDCDHS.report.sent<-"XXX" # PREVIOUS FOLDER 
 last.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.last.CDCDHS.report.sent, "/uwm_report_20", foldername.last.CDCDHS.report.sent, ".txt"), h=T, sep = "|")
 ```
 
 Indicate the name of the freshly generated report and the number of the new report
 ```{r}
-foldername.report.just.generated<-"XXXX"
-number.new.report<-XXX
+foldername.report.just.generated<-"XXX" # NEW FOLDER (The one you just generated)
+number.new.report<-XXX # NUMBER OF LAST REPORT + 1
 new.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", foldername.report.just.generated, "/uwm_report_20", foldername.report.just.generated, ".txt"), h=T, sep = "|")
 ```
-
 
 Exclude samples in old/fresh database with missing N1/N2 or flow values
 ```{r}
@@ -74,30 +74,30 @@ if(length(new.CV)==0){
 
 ### Prepare the databases
 
-Truncate all numeric variables
+roundate all numeric variables
 ```{r}
-new.report.only.old.data.trunc <-new.report.only.old.data %>% mutate_if(is.numeric, trunc, digits=2)
-last.report.trunc <-last.report.noNAs %>% mutate_if(is.numeric, trunc, digits=2)
+new.report.only.old.data.round <-new.report.only.old.data %>% mutate_if(is.numeric, round, digits=2)
+last.report.round <-last.report.noNAs %>% mutate_if(is.numeric, round, digits=2)
 ```
 
 Convert all factors in characters
 ```{r}
-i <- sapply(new.report.only.old.data.trunc, is.factor)
-new.report.only.old.data.trunc[i] <- lapply(new.report.only.old.data.trunc[i], as.character)
+i <- sapply(new.report.only.old.data.round, is.factor)
+new.report.only.old.data.round[i] <- lapply(new.report.only.old.data.round[i], as.character)
 
-j <- sapply(last.report.trunc, is.factor)
-last.report.trunc[j] <- lapply(last.report.trunc[j], as.character)
+j <- sapply(last.report.round, is.factor)
+last.report.round[j] <- lapply(last.report.round[j], as.character)
 ```
 
 Convert NAs into "-"
 ```{r}
-new.report.only.old.data.trunc[is.na(new.report.only.old.data.trunc)]<-"-"
-last.report.trunc[is.na(last.report.trunc)]<-"-"
+new.report.only.old.data.round[is.na(new.report.only.old.data.round)]<-"-"
+last.report.round[is.na(last.report.round)]<-"-"
 ```
 
 ### Identify cells that are different between old and new reports
-```{r}
-comparison <- data.frame(1 * (last.report.trunc != new.report.only.old.data.trunc))
+```{r} 
+comparison <- data.frame(1 * (last.report.round != new.report.only.old.data.round)) # If you have an error at that line, it is most likely that you have an issue in the BigSpreadsheet = A samples listed in the last report is not anymore in the BigSpreadsheet, because your OneDrive is not up to date, syncing issue, deleted row? You will have to investigate.
 modified.CV<-which(rowSums(comparison) > 0)
 new.report.only.changes<-new.report.only.old.data[modified.CV, ]
 ```
@@ -109,14 +109,14 @@ new.report.only.changes<-new.report.only.old.data[modified.CV, ]
 Merge only new samples and modified samples
 ```{r}
 if(length(new.CV)==0 & length(modified.CV)!=0){
-  print(paste0(length(modified.CV), " samples found with updated data"))
+  print(paste0(length(modified.CV), " sample(s) found with updated data"))
   new.report.final<-new.report.only.changes
   } else if(length(new.CV)!=0 & length(modified.CV)==0){
-    print(paste0(length(new.CV), " new samples"))
+    print(paste0(length(new.CV), " new sample(s)"))
     new.report.final<-new.report.only.new.data
     } else if(length(new.CV)!=0 & length(modified.CV)!=0){
-      print(paste0(length(modified.CV), " samples found with updated data"))
-      print(paste0(length(new.CV), " new samples"))
+      print(paste0(length(modified.CV), " sample(s) found with updated data"))
+      print(paste0(length(new.CV), " new sample(s)"))
       new.report.final<-rbind(new.report.only.new.data, new.report.only.changes)
     }
 ```
@@ -127,12 +127,15 @@ List samples >LOD for N1N2 in the last N1N2 run
 ```{r}
 # date last N1N2 run
 new.report$TestResultDate<-as.Date(new.report$TestResultDate, format="%m/%d/%Y")
-last.run<-max(unique(new.report$TestResultDate))
+list.runs<-unique(new.report$TestResultDate)
+list.runs[is.na(list.runs)] <- "2000-01-01"
+last.run<-max(list.runs)
 last.N1N2.run<-subset(new.report, TestResultDate==last.run)
 last.N1N2.run.aboveLOD<-subset(last.N1N2.run, N1SARSCoV2BelowLOD == "no" | N2SARSCoV2BelowLOD == "no")
 if(nrow(last.N1N2.run.aboveLOD)!=0){
-   print(paste0("CV above BLD for N1N2 (in most recent run): ", last.N1N2.run.aboveLOD$SampleID))
-} else {
+   print("CV above BLD for N1N2 (in most recent run): ")
+   print(sort(last.N1N2.run.aboveLOD$SampleID))
+   } else {
    print("No sample above BLD for N1N2 in the most recent run.")
 }
 ```
@@ -142,7 +145,7 @@ if(nrow(last.N1N2.run.aboveLOD)!=0){
 Prepare comparison export
 ```{r}
 if(length(modified.CV)!=0){
-comparison.cv<-cbind(last.report.trunc$SampleID, comparison)
+comparison.cv<-cbind(last.report.round$SampleID, comparison)
 modified.CV.col<-which(colSums(comparison) > 0)
 comparison.cv.changes<-comparison.cv[modified.CV, c(1, modified.CV.col+1)]
 names(comparison.cv.changes)[1]<-"CV"

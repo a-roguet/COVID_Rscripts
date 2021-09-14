@@ -29,6 +29,7 @@ library(knitr)
 library(openxlsx)
 library(R.utils)
 library(pander)
+library(lubridate)
 
 is.nan.data.frame <- function(x)
   do.call(cbind, lapply(x, is.nan))
@@ -42,12 +43,14 @@ current_time2<-format(Sys.time(), "%Y-%m-%d_%H%M")
 My OneDrive is synchronized on my local machine in the directory `~/OneDrive - UWM/'. It must not be the case for your computer. You will thus have to change slightly the path to access the files. 
 
 ### ddPCR and qPCR data
-ddPCR and qPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+ddPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
 data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4:22))
+data.ddPCR<-subset(data.ddPCR, Run != "NA")
+if(anyNA(data.ddPCR$Dilution)==TRUE) {stop("You forgot to add the dilution factor :-)")}
 ```
 
-ddPCR and qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 ```{r }
 data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
 ```
@@ -66,7 +69,7 @@ metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters
 source(metadata_function)
 compile_WWTPs_parameters()
 metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled_DO_NOT_TOUCH.xlsx", sheet = "data", colNames = TRUE)
-if(length(which(duplicated(metadata.parameter$CV)==TRUE)) != 0) {stop("Two samples have same CV number in WWTP parameters!")}
+if(length(which(duplicated(metadata.parameter$CV)==TRUE)) != 0) {stop("Two samples have same CV number in WWTP parameters! (CV numbers left blank for 2 samples?)")}
 ```
 
 Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
@@ -181,9 +184,11 @@ ddPCR.GC.per.uL.rx<-ifelse(ddPCR$`Conc(copies/µL)`=="No Call",0,as.numeric(as.c
 GC.per.rx<-rx.volume*ddPCR.GC.per.uL.rx
 ```                
 
-  + Effective volume per rx (taking into account the dilution factor (DF, i.e. 1 for 1:1, 10 for 1:10))
+  + Effective volume per rx (taking into account the dilution factor (DF, i.e. 1 for 1:1, 10 for 1:10)) \
+  Effective volume = Volume filtered / ( (Volume buffer/Volume buffer extracted) * (Elution volume / Volume sample used in RT-ddPCR))*1000 \
 ```{r echo = T, message = FALSE, error = FALSE}
-effective.volume.DF<-as.numeric(as.character(ddPCR$`1-Step_Effective_Volume`))/as.numeric(as.character(ddPCR$Dilution))
+effective.volume<-as.numeric(as.character(ddPCR$Processed_Volume))/((as.numeric(as.character(ddPCR$`Total_buffer_volume_before_extraction`))/as.numeric(as.character(ddPCR$`Volume_buffer_extracted_after_beat_bashing`)))*(as.numeric(as.character(ddPCR$RNA_Elution_Volume))/as.numeric(as.character(ddPCR$`RT-ddPCR_RNA_Volume`))))*1000
+effective.volume.DF<-effective.volume/as.numeric(as.character(ddPCR$Dilution))
 ```
                     
   + GC per L of sewage : GC per assay (GC/uL) / Effective volume (uL) * 1000000
@@ -573,6 +578,7 @@ metadata.parameter$`Daily.Avg.Flow.(MGD)`<-as.numeric(as.character(metadata.para
 metadata.parameter$`TSS.(mg/L)`<-as.numeric(as.character(metadata.parameter$`TSS.(mg/L)`))
 metadata.parameter$pH<-as.numeric(as.character(metadata.parameter$pH))
 metadata.parameter$`BOD.(mg/L)`<-as.numeric(as.character(metadata.parameter$`BOD.(mg/L)`))
+metadata.parameter$`Conductivity.(uS/cm)`<-as.numeric(as.character(metadata.parameter$`Conductivity.(uS/cm)`))
 
 PV.metadata<-setDT(metadata.parameter)[PV.df, on="CV"]
 PV.metadata$N1N2_effective_volume_mL<-as.numeric(as.character(PV.metadata$N1N2_effective_volume_mL))
@@ -588,6 +594,7 @@ PV.metadata.WWTP$CompositeFreq<-ifelse(PV.metadata.WWTP$City=="Milwaukee_JI", ro
  + Add methods info
 ```{r}
 PV.metadata.WWTP.method<-cbind(PV.metadata.WWTP, method.info)
+PV.metadata.WWTP.method$ExtractionMethod<-ifelse(as.Date(PV.metadata.WWTP.method$Collection_Date_Start, format="%m/%d/%Y") > as.Date(as.character("08/18/2021"), format="%m/%d/%Y"), PV.metadata.WWTP.method$ExtractionMethod_after21Aug2021, PV.metadata.WWTP.method$ExtractionMethod_before21Aug2021)
 ```
 
 
@@ -628,7 +635,7 @@ paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/uwm_re
 report.order <- report
 report.order$SampleID <- as.numeric(as.character(report.order$SampleID))
 report.order <- report.order[order(-SampleID),]
-pander(head(report.order[,c("WWTPName", "SampleID","SampleCollectDate", "SampleCollectTime",  "WWTPComments", "N1SARSCoV2Conc", "N1SARSCoV2BelowLOD", "N1SARSCoV2StdError", "NTCAmplifyN1", "NumNTCAmplifyN1", "NumNoTargetControlN1", "N1_LOD", "N1_LOQ", "N2SARSCoV2Conc", "N2SARSCoV2BelowLOD", "N2SARSCoV2StdError", "NTCAmplifyN2", "NumNTCAmplifyN2", "NumNoTargetControlN2", "N2_LOD", "N2_LOQ", "AvgSARSCoV2Conc", "AvgSARSCoV2BelowLOD", "PPMoVConc", "BCoVRecRate", "InhibitionDetect", "InhibitionAdjust", "AnalyticalComments", "TestResultDate", "AverageFlowRate", "EquivSewageAmt", "TSS", "pH", "BOD", "Conductivity", "Temperature", "BCoVSpikeConc", "N1SARSCoV2CI95lo",	"N1SARSCoV2CI95up", "N2SARSCoV2CI95lo",	"N2SARSCoV2CI95up")]))
+pander(report.order[1:10,c("WWTPName", "SampleID","SampleCollectDate", "SampleCollectTime",  "WWTPComments", "N1SARSCoV2Conc", "N1SARSCoV2BelowLOD", "N1SARSCoV2StdError", "NTCAmplifyN1", "NumNTCAmplifyN1", "NumNoTargetControlN1", "N1_LOD", "N1_LOQ", "N2SARSCoV2Conc", "N2SARSCoV2BelowLOD", "N2SARSCoV2StdError", "NTCAmplifyN2", "NumNTCAmplifyN2", "NumNoTargetControlN2", "N2_LOD", "N2_LOQ", "AvgSARSCoV2Conc", "AvgSARSCoV2BelowLOD", "PPMoVConc", "BCoVRecRate", "InhibitionDetect", "InhibitionAdjust", "AnalyticalComments", "TestResultDate", "AverageFlowRate", "EquivSewageAmt", "TSS", "pH", "BOD", "Conductivity", "Temperature", "BCoVSpikeConc", "N1SARSCoV2CI95lo",	"N1SARSCoV2CI95up", "N2SARSCoV2CI95lo",	"N2SARSCoV2CI95up")])
 ```
 
 ### Are there missing values or NAs?
@@ -907,8 +914,14 @@ if(isTRUE(nrow(report.check.FALSE)==0)==TRUE){cat("Everything is okay")} else {k
 
 
 # Visual check of the data
+
+```{r echo=FALSE}
+last6months<-as.Date(format(Sys.time() %m-% months(6), '%Y-%m-%d'))
+report.last6months<-report[as.Date(report$SampleCollectDate, format = "%m/%d/%Y") > last6months, ]
+```
+
 ```{r echo=FALSE, dpi=300}
-print("N1 visualization:")
+print("N1 visualization (all dates):")
 N1.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N1SARSCoV2Conc))+
   geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
   facet_wrap(~WWTPName, scales = "free_y") + 
@@ -919,14 +932,38 @@ N1.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , 
         axis.title.x = element_blank()) + 
     geom_errorbar(
     aes(ymin = N1SARSCoV2CI95lo, ymax = N1SARSCoV2CI95up),
-    width = 0.1,
+    width = 0.05,
     size = 0.3,
+    colour="grey",
     position = position_dodge(0.9)
   ) +
   ggtitle("N1 concentration and Poisson-based 95% confidence interval")
 N1.plot
 
 pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1_concentration.pdf")); N1.plot; dev.off()
+``` 
+
+```{r echo=FALSE, dpi=300}
+print("N1 visualization (last 6 months):")
+N1.plot.l6m<-ggplot(report.last6months, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N1SARSCoV2Conc))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  geom_line(aes(y = N1_LOD), color="red") +
+  geom_line(aes(y = N1_LOQ), color="blue") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+    geom_errorbar(
+    aes(ymin = N1SARSCoV2CI95lo, ymax = N1SARSCoV2CI95up),
+    width = 0.05,
+    size = 0.3,
+    colour="grey",
+    position = position_dodge(0.9)
+  ) +
+  ggtitle("N1 concentration and Poisson-based 95% confidence interval - last 6 months")
+N1.plot.l6m
+
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1_concentration_last6months.pdf")); N1.plot.l6m; dev.off()
 ``` 
 
 ```{r echo=FALSE, dpi=300}
@@ -941,8 +978,9 @@ N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , 
         axis.title.x = element_blank()) + 
       geom_errorbar(
     aes(ymin = N2SARSCoV2CI95lo, ymax = N2SARSCoV2CI95up),
-    width = 0.1,
+    width = 0.05,
     size = 0.3,
+    colour="grey",
     position = position_dodge(0.9)
   ) +
   ggtitle("N2 concentration and Poisson-based 95% confidence interval")
@@ -950,6 +988,30 @@ N2.plot
 
 pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N2_concentration.pdf")); N2.plot; dev.off()
 ```
+
+```{r echo=FALSE, dpi=300}
+print("N2 visualization (last 6 months):")
+N2.plot.l6m<-ggplot(report.last6months, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=N2SARSCoV2Conc))+
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  geom_line(aes(y = N1_LOD), color="red") +
+  geom_line(aes(y = N1_LOQ), color="blue") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+    geom_errorbar(
+    aes(ymin = N1SARSCoV2CI95lo, ymax = N1SARSCoV2CI95up),
+    width = 0.05,
+    size = 0.3,
+    colour="grey",
+    position = position_dodge(0.9)
+  ) +
+  ggtitle("N2 concentration and Poisson-based 95% confidence interval - last 6 months")
+N2.plot.l6m
+
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N2_concentration_last6months.pdf")); N2.plot.l6m; dev.off()
+``` 
+
 ```{r echo=FALSE, dpi=300}
 print("N1/N2 visualization:")
 N1N2.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=AvgSARSCoV2Conc)) +
@@ -965,6 +1027,23 @@ N1N2.plot
 
 pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1N2_concentration.pdf")); N1N2.plot; dev.off()
 ```
+
+```{r echo=FALSE, dpi=300}
+print("N1/N2 visualization:")
+N1N2.plot.l6m<-ggplot(report.last6months, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y") , y=AvgSARSCoV2Conc)) +
+  geom_bar(position = position_dodge2 (width = 1), stat = "identity", colour="black", size=.3) + 
+  facet_wrap(~WWTPName, scales = "free_y") + 
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  geom_line(aes(y = (report.last6months$N1_LOD+report.last6months$N2_LOD)/2), color="red") +
+  geom_line(aes(y = (report.last6months$N1_LOQ+report.last6months$N2_LOQ)/2), color="blue") +
+  theme(axis.text.x = element_text(angle = 45, size = 4, hjust=1), 
+        axis.title.x = element_blank()) + 
+  ggtitle("N1/N2 avg concentration - last 6 months")
+N1N2.plot.l6m
+
+pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/N1N2_concentration_last6months.pdf")); N1N2.plot.l6m; dev.off()
+```
+
 ```{r echo=FALSE, dpi=300}
 print("BCoV visualization:")
 BCoV.plot<-ggplot(report, aes(x=as.Date(SampleCollectDate, format = "%m/%d/%Y"), y=BCoVRecRate))+
@@ -977,7 +1056,6 @@ BCoV.plot
 
 pdf(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/Visualization/BCoV_recovery.pdf")); BCoV.plot; dev.off()
 ```
-
 
 ```{r echo=FALSE, dpi=300}
 print("PMMoV visualization:")
