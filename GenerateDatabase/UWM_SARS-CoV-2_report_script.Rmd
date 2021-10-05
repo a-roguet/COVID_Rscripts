@@ -69,7 +69,10 @@ metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters
 source(metadata_function)
 compile_WWTPs_parameters()
 metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled_DO_NOT_TOUCH.xlsx", sheet = "data", colNames = TRUE)
-if(length(which(duplicated(metadata.parameter$CV)==TRUE)) != 0) {stop("Two samples have same CV number in WWTP parameters! (CV numbers left blank for 2 samples?)")}
+duplicate.CV<-subset(metadata.parameter, CV!="NA")
+duplicate.CV.list<-duplicate.CV[which(duplicated(metadata.parameter$CV)==TRUE), c("CV")]
+duplicate.CV<-subset(duplicate.CV, CV %in% duplicate.CV.list)
+if(nrow(duplicate.CV) != 0) {stop(paste("Two samples have same CV number in WWTP parameters! ", as.character(duplicate.CV.list), " located in the WWTPs tabs: ", unique(duplicate.CV$Facility)))}
 ```
 
 Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
