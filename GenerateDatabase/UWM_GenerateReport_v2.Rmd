@@ -1,0 +1,847 @@
+---
+title: "UWM - CDC/DHS report"
+date: "`r format(Sys.time(), '%a %d %b %Y')`"
+output:                 
+  html_document: 
+    css: "style.css"        
+    code_download: true 
+    code_folding: 'hide'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+```
+
+```{css echo=FALSE}
+.code-folding-btn {
+  display: none;
+}
+```
+
+\
+
+```{r warning=FALSE, message=FALSE, results='hide'}
+# Clear out your workspace
+rm(list=ls(all=FALSE))
+ls()
+set.seed(123)
+```
+
+```{r echo=TRUE, warning=TRUE, message=FALSE}
+# Load packages and function
+library(openxlsx)
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+library(knitr)
+library(openxlsx)
+library(R.utils)
+library(pander)
+library(lubridate)
+library(plotly)
+library(crosstalk)
+library(htmlwidgets)
+
+is.nan.data.frame <- function(x)
+  do.call(cbind, lapply(x, is.nan))
+current_time<-format(Sys.time(), "%Y-%m-%d_%H%M")
+'%!in%' <- function(x,y)!('%in%'(x,y)) 
+```
+
+
+```{r "Import data"}
+############# Import data ############# 
+#My OneDrive is synchronized on my local machine in the directory `~/OneDrive - UWM/'. It must not be the case for your computer. You will thus have to change slightly the path to access the files. 
+
+
+# 1. ddPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/
+data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4:22))
+
+data.ddPCR<-subset(data.ddPCR, Run != "NA")
+if(anyNA(data.ddPCR$Dilution)==TRUE) {stop("You forgot to add the dilution factor :-)")}
+# rename fields sent to DHS/CDC
+data.ddPCR <- data.ddPCR |> 
+  dplyr::rename(analytic_comments = CDC_analytical_comment)
+# select fields of interest
+data.ddPCR <- data.ddPCR |> 
+  dplyr::select(Dilution, analytic_comments, Run, Sample_ID, Target, `Conc(copies/µL)`, Accepted.Droplets, Positives, NeedRerun)
+
+# 2. qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
+
+# rename fields sent to DHS/CDC
+data.qPCR <- data.qPCR |> 
+  dplyr::rename(analytic_comments = CDC_analytical_comment)
+# select fields of interest
+data.qPCR <- data.qPCR |> 
+  dplyr::select(Dilution, analytic_comments, Run, Sample_ID, Target, Cт, NeedRerun)
+
+# 3. Sample info are stored in the tab "Sample extraction" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+# rename fields sent to DHS/CDC
+sample.info <- sample.info |> 
+  dplyr::rename(sample_id = CV,
+                Sample_ID = CV_Filter_ID,
+                sample_collect_date = Collection_Date_Start,
+                wwtp_comments = WWTPComments_for_CDC)
+# select fields of interest
+sample.info <- sample.info |> 
+  dplyr::select(sample_id, Sample_ID, City, Method, sample_collect_date, BCoV_Titer_Concentration, Volume_BCoV_Spiked, wwtp_comments, `ReleaseData?`, Processed_Volume, Total_buffer_volume_before_extraction, Volume_buffer_extracted_after_beat_bashing, RNA_Elution_Volume)
+
+
+# 4. Physico-chemical parameters are stored in the directory "WWTPs_parameters" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/WWTPs_parameters/.
+# Compile all metadata parameters
+metadata_function <- Sys.glob("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/*.R");metadata_function
+source(metadata_function)
+compile_WWTPs_parameters()
+metadata.parameter<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/WWTP_Parameters_Compiled_DO_NOT_TOUCH.xlsx", sheet = "data", colNames = TRUE)
+duplicate.CV<-subset(metadata.parameter, CV!="NA")
+duplicate.CV.list<-duplicate.CV[which(duplicated(metadata.parameter$CV)==TRUE), c("CV")]
+duplicate.CV<-subset(duplicate.CV, CV %in% duplicate.CV.list)
+if(nrow(duplicate.CV) != 0) {stop(paste("Two samples have same CV number in WWTP parameters! ", as.character(duplicate.CV.list), " located in the WWTPs tabs: ", unique(duplicate.CV$Facility)))}
+# rename fields sent to DHS/CDC
+metadata.parameter <- metadata.parameter |> 
+  dplyr::rename(sample_id = CV,
+                sample_collect_time = Collection.Start.Time,
+                tss = `TSS.(mg/L)`,
+                ph = pH,
+                flow_rate = `Daily.Avg.Flow.(MGD)`,
+                collection_water_temp = `Temp.(°C)`,
+                conductivity = `Conductivity.(uS/cm)`)
+# select fields of interest
+metadata.parameter <- metadata.parameter |> 
+  dplyr::select(sample_id, flow_rate, tss, ph, conductivity, collection_water_temp, sample_collect_time)
+
+# 5. Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
+info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "WWTP", colNames = TRUE)
+
+
+# 6. Information about methods is stored in the tab "method" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/
+info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "method", colNames = TRUE)
+
+
+# 7. Information about assays is stored in the tab "assay" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
+info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "assay", colNames = TRUE)
+
+# rename fields sent to DHS/CDC
+info.assay <- info.assay |> 
+  dplyr::rename(PCR.rx.volume = `PCR.reaction.volume.(uL)`,
+                PCR.template.volume = `PCR.template.volume.(uL)`,
+                pcr_target_units = PCR.target.unit,
+                pcr_type = PCR.type,
+                lod_ref = LOD.reference,
+                quant_stan_type = Type.of.standard,
+                stan_ref = Reference.of.standard)
+```
+
+	
+
+
+
+
+```{r "Backup files", echo=FALSE, message=FALSE, results='hide'}
+############# Backup files ############# 
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/"))
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/"))
+
+rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("UWM_SARS-CoV-2_report*.Rmd"))
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", gsub("_OPEN_KNIT", "_DO_NOT_MODIFY", rmd)), overwrite = TRUE, copy.mode = TRUE)
+
+rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("DatabaseCuration_v2_DO_NOT_MODIFY*.Rmd"))
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", gsub("_DO_NOT_MODIFY", "_OPEN_MODIFY_KNIT", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
+
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTP_Methods_Assay_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+
+```
+ 
+ 
+```{r}
+############# Prepare info.WWTP ############# 
+  # Only keep assays flagged as 'Release to DHS'
+info.WWTP<-info.WWTP |> dplyr::filter(tolower(Release.to.DHS) == "yes")
+``` 
+ 
+ 
+```{r}
+############# Select samples ############# 
+# Select "real-time" samples collected in the WWTPs monitored and processed using HA filters and bead beated using the zymo beads. Special 12h and 24h samples from JI are discarded. Only samples not classified as "need rerun" or other labeling are considered. 
+sample.info<-sample.info |> 
+  dplyr::filter(tolower(`ReleaseData?`) == "yes", 
+                City %in% info.WWTP$City)
+```
+
+
+```{r}
+############# Prepare info.assay ############# 
+  # Only keep assays flagged as 'Release to DHS'
+info.assay<-info.assay |> dplyr::filter(Release.to.DHS == "yes")
+  # Define dates in info.assay
+info.assay$Start<-suppressWarnings(as.Date(as.numeric(as.character(info.assay$Start)), origin = "1899-12-30"))
+info.assay$End<-ifelse(grepl("going", info.assay$End), as.numeric(as.Date(Sys.time())-as.Date(0, origin="1899-12-30", tz='UTC')), info.assay$End) # Convert "On-going" into today's date
+info.assay$End<-suppressWarnings(as.Date(as.numeric(as.character(info.assay$End)), origin = "1899-12-30"))
+  # Prepare the info.assay
+info.assay$Target<-tolower(info.assay$Target)
+info.assay$Internal.control.assessed.using<-tolower(info.assay$Internal.control.assessed.using)
+info.assay$Inhibition.assessed.using<-tolower(info.assay$Inhibition.assessed.using)
+```
+
+
+```{r "Format ddPCR data"}
+############# Prepare dPCR data ############# 
+
+# 1. Only select samples that do not need to be re-run or that are controled samples (i.e., duplicate sample). 
+data.ddPCR<-data.ddPCR |> dplyr::filter(NeedRerun %!in% c("need_rerun", "duplicate"))
+
+# 2. Merge ddPCR and assay info 
+  # Determine the date the assays were ran
+data.ddPCR$run.date<-stringr::str_split_fixed(data.ddPCR$Run, "[ ]", 2)[,1]
+data.ddPCR$run.date<-as.Date(data.ddPCR$run.date, format="%Y-%m-%d")
+  # Merge ddPCR and assay information
+data.ddPCR$Target<-tolower(data.ddPCR$Target)
+data.ddPCR<-dplyr::inner_join(data.ddPCR, info.assay, by = join_by(Target, between(run.date, Start, End))) #data.table::between
+
+# 3. FINAL ddPCR: Merge both sample.info and ddPCR datasets
+ddPCR<-dplyr::inner_join(sample.info, data.ddPCR, by="Sample_ID", relationship = "many-to-many")
+```
+
+
+
+```{r "ddPCR: Computation of new fields"}
+############# New fields calculation ############# 
+```
+
+```{r "ddPCR: Concentrations"}
+#### Concentrations ####
+
+# 1. GC per reaction (ddPCR or RT-ddPCR): reaction volume (uL) * concentration per uL of reaction
+ddPCR$PCR.rx.volume<-suppressWarnings(as.numeric(as.character(ddPCR$PCR.rx.volume)))
+ddPCR$`Conc(copies/µL)`<-suppressWarnings(as.numeric(as.character(ddPCR$`Conc(copies/µL)`)))
+ddPCR$ddPCR.GC.per.uL.rx<-ifelse(ddPCR$`Conc(copies/µL)`=="No Call", 0, ddPCR$`Conc(copies/µL)`)
+ddPCR$GC.per.rx<-ddPCR$PCR.rx.volume*ddPCR$ddPCR.GC.per.uL.rx
+
+# 3. Effective volume per rx (taking into account the dilution factor (DF, i.e. 1 for 1:1, 10 for 1:10)) \
+# Effective volume = Volume filtered / ( (Volume buffer/Volume buffer extracted) * (Elution volume / Volume sample used in RT-ddPCR))*1000 
+ddPCR$Processed_Volume<-suppressWarnings(as.numeric(as.character(ddPCR$Processed_Volume)))
+ddPCR$`Total_buffer_volume_before_extraction`<-suppressWarnings(as.numeric(as.character(ddPCR$`Total_buffer_volume_before_extraction`)))
+ddPCR$`Volume_buffer_extracted_after_beat_bashing`<-suppressWarnings(as.numeric(as.character(ddPCR$`Volume_buffer_extracted_after_beat_bashing`)))
+ddPCR$RNA_Elution_Volume<-suppressWarnings(as.numeric(as.character(ddPCR$RNA_Elution_Volume)))
+ddPCR$PCR.template.volume<-suppressWarnings(as.numeric(as.character(ddPCR$PCR.template.volume)))
+ddPCR$Dilution<-suppressWarnings(as.numeric(as.character(ddPCR$Dilution)))
+#
+ddPCR$effective.volume<-ddPCR$Processed_Volume/((ddPCR$`Total_buffer_volume_before_extraction`/ddPCR$`Volume_buffer_extracted_after_beat_bashing`)*(ddPCR$RNA_Elution_Volume/ddPCR$PCR.template.volume))*1000
+ddPCR$effective.volume.DF<-ddPCR$effective.volume/ddPCR$Dilution
+
+# 4. GC per L of sewage : GC per assay (GC/uL) / Effective volume (uL) * 1000000
+ddPCR$PCR.GC.per.L<-ddPCR$GC.per.rx/ddPCR$effective.volume.DF*1000000
+
+# 5. lower/upper interval confidence of ddPCR concentrations
+lower.upper<-matrix(NA, nrow(ddPCR), 2)
+ddPCR_Positives<-suppressWarnings(as.numeric(as.character(ddPCR$Positives)))
+ddPCR_Positives[is.na(ddPCR_Positives)] <- 0 # Replace NA by 0
+for (i in 1:nrow(ddPCR)){
+  poisson.test.result<-0
+  poisson.test.result<-poisson.test(ddPCR_Positives[i], conf.level = 0.95, alternative = c("two.sided"))
+  lower.upper[i,1]<-ifelse(ddPCR_Positives[i]==0, NA, poisson.test.result$conf.int[1])
+  lower.upper[i,2]<-ifelse(ddPCR_Positives[i]==0, NA, poisson.test.result$conf.int[2])
+  }
+lower.upper<-as.data.frame(lower.upper); names(lower.upper)<-c("Positives_min", "Positives_max")
+ddPCR$Concentration.per.ul.lower = ifelse(ddPCR$Positives==0, NA, round((-log((ddPCR$Accepted.Droplets-lower.upper$Positives_min) / ddPCR$Accepted.Droplets)) / (0.00085), digits = 3))
+ddPCR$Concentration.GC.per.L.lower<-1000000*(ddPCR$PCR.rx.volume*ddPCR$Concentration.per.ul.lower)/ddPCR$effective.volume.DF
+ddPCR$Concentration.per.ul.upper = ifelse(ddPCR$Positives==0, NA, round((-log((ddPCR$Accepted.Droplets-lower.upper$Positives_max) / ddPCR$Accepted.Droplets)) / (0.00085), digits = 3))
+ddPCR$Concentration.GC.per.L.upper<-1000000*(ddPCR$PCR.rx.volume*ddPCR$Concentration.per.ul.upper)/ddPCR$effective.volume.DF
+```
+
+```{r "ddPCR: Internal control recovery"}
+
+pander("Note: this script can only use BCoV as an internal control.")
+
+#### BCoV recoveries ####
+# 1. Expected BCoV concentration per L of sewage (GC/L sewage): (volume spiked (uL) * concentration in BCoV solution (GC/uL) ) / Sample volume processed (mL) * 1000
+ddPCR$Volume_BCoV_Spiked<-suppressWarnings(as.numeric(as.character(ddPCR$Volume_BCoV_Spiked)))
+ddPCR$BCoV_Titer_Concentration<-suppressWarnings(as.numeric(as.character(ddPCR$BCoV_Titer_Concentration)))
+ddPCR$Processed_Volume<-suppressWarnings(as.numeric(as.character(ddPCR$Processed_Volume)))
+#
+ddPCR$BCoV.exp.GC.per.L.sewage<-(ddPCR$Volume_BCoV_Spiked*ddPCR$BCoV_Titer_Concentration)/ddPCR$Processed_Volume*1000
+ddPCR$BCoV.exp.log10.per.mL.sewage<-log10(ddPCR$BCoV.exp.GC.per.L.sewage/1000)
+
+# 2. Observed BCoV concentration per L of sewage (GC/L sewage)
+ddPCR$BCoV.obs.GC.per.L.sewage<-ifelse(tolower(ddPCR$Target)=="bcov", ddPCR$PCR.GC.per.L, NA)
+
+# 3. BCoV recovery (%): Observed/Expected BCoV concentration per L of sewage * 100 
+ddPCR$BCoV.recovery<-ddPCR$BCoV.obs.GC.per.L.sewage/ddPCR$BCoV.exp.GC.per.L.sewage*100
+
+# 4. Summary
+final.BCoV<-ddPCR |>
+  dplyr::filter(tolower(Target) == "bcov") |>
+  dplyr::group_by(sample_id, pcr_target) |>
+  dplyr::summarize(rec_eff_percent = round(mean(BCoV.recovery, na.rm=TRUE), digits = 3),
+                   rec_eff_spike_conc = round(mean(BCoV.exp.log10.per.mL.sewage, na.rm=TRUE), digits = 5),
+                    .groups = 'drop') |>
+  dplyr::rename(Internal.control.assessed.using = pcr_target) |>
+  dplyr::mutate(rec_eff_target_name = Internal.control.assessed.using)
+final.BCoV<-as.data.frame(final.BCoV)
+```
+
+```{r "ddPCR: LOD/LOQ"}
+#### LOD and LOQ ####
+
+# 1. Define LOD/LOQ threshold concentrations (GC/uL Rx)
+ddPCR$Accepted.Droplets<-suppressWarnings(as.numeric(as.character(ddPCR$Accepted.Droplets)))
+ddPCR$LOD.No..droplets<-suppressWarnings(as.numeric(as.character(ddPCR$LOD.No..droplets)))
+ddPCR$LOQ.No..droplets<-suppressWarnings(as.numeric(as.character(ddPCR$LOQ.No..droplets)))
+ddPCR$`Volume.Droplet/Partition.(uL)`<-suppressWarnings(as.numeric(as.character(ddPCR$`Volume.Droplet/Partition.(uL)`)))
+
+ddPCR$LOD.conc.threshold<-round((-log((ddPCR$Accepted.Droplets - ddPCR$LOD.No..droplets) / ddPCR$Accepted.Droplets)) / (ddPCR$`Volume.Droplet/Partition.(uL)`), digits = 3)
+ddPCR$LOQ.conc.threshold<-round((-log((ddPCR$Accepted.Droplets - ddPCR$LOQ.No..droplets) / ddPCR$Accepted.Droplets)) / (ddPCR$`Volume.Droplet/Partition.(uL)`), digits = 3)
+
+# 2. Define LOD threshold concentration (GC/L sewage): Volume Rx (uL) * minimum concentration detectable (LOD.conc.threshold) / Effective volume (taking into account the dilution factor) (uL)
+ddPCR$LOD<-1000000*(ddPCR$PCR.rx.volume*ddPCR$LOD.conc.threshold)/ddPCR$effective.volume.DF
+  
+# 3. Define LOQ threshold concentration (GC/L sewage):  Volume Rx (uL) * minimum concentration quantifiable (LOQ.conc.threshold) / Effective volume (taking into account the dilution factor) (uL)
+ddPCR$LOQ<-1000000*(ddPCR$PCR.rx.volume*ddPCR$LOQ.conc.threshold)/ddPCR$effective.volume.DF
+
+# 4. Define if target above/below level of detection
+ddPCR$below_LOD<-ifelse(as.numeric(as.character(ddPCR$Positives)) < as.numeric(as.character(ddPCR$LOD.No..droplets)), 1, 0)
+```
+
+```{r "ddPCR: NTC information"}
+#### NTC information ####
+
+# 1. Extract NTC-N1/N2 information for each run
+ddPCR.NTC<-data.ddPCR |> 
+  dplyr::filter(tolower(Sample_ID) == "ntc", Type %in% c("main", "human-marker")) |>
+  dplyr::select(Run, Target, Positives, LOD.No..droplets)
+
+# 2. Determine if NTC were amplified or not for each run \
+# A NTC is "not amplified" if the number of positive droplets is below the limit of detection
+ddPCR.NTC$Amplified<-ifelse(ddPCR.NTC$Positives>=ddPCR.NTC$LOD.No..droplets,1,0)
+
+# 3. Summarize the data per run \
+ddPCR.NTC.summary<- ddPCR.NTC |>
+  dplyr::group_by(Run, Target) |>
+  dplyr::summarize(NTC_amplified_count = sum(Amplified),
+            NTC_count = n(), 
+            .groups = 'drop')
+
+# 4. Merge ddPCR and NTC data
+ddPCR<-dplyr::left_join(ddPCR, ddPCR.NTC.summary, by=c("Target", "Run"))
+```
+
+```{r "ddPCR: Inhibition"}
+#### Inhibition ####
+
+pander("Note: this script can process MULTIPLE ddPCR inhibition assays.")
+
+# 1. Extract BRSV-reference information for each run
+ddPCR.inhibition.ref<-data.ddPCR |> 
+  dplyr::filter(tolower(Type) == "inhibition", tolower(Sample_ID) =="ref") |>
+  dplyr::select(Run, Target, `Conc(copies/µL)`) |>
+  dplyr::group_by(Run, Target) |>
+  dplyr::summarize(`INHIBITION.REF.Conc(copies/µL)` =  mean(as.numeric(as.character(`Conc(copies/µL)`))), 
+            .groups = 'drop')
+
+# 2. Extract BRSV-sample information for each run
+ddPCR.inhibition.sample<-ddPCR |>
+  dplyr::filter(tolower(Type) == "inhibition", tolower(Sample_ID) %!in% c("ref", "ntc")) |>
+  dplyr::select(Run, Target, `Conc(copies/µL)`, Sample_ID, sample_id, Dilution, pcr_target)
+  
+# 3. Merge reference and samples information
+ddPCR.inhibition<-dplyr::left_join(ddPCR.inhibition.sample, ddPCR.inhibition.ref, by=c("Run", "Target")) |>
+  dplyr::filter(!is.na(Sample_ID)) # remove rows with Sample_ID = NA
+
+# 4. Determine if there is an inhibition using ratio BRSV-observed / BRSV-expected > 0.5 => no inhibition \
+ddPCR.inhibition$Inhibition<-ifelse(ddPCR.inhibition$`Conc(copies/µL)`/ddPCR.inhibition$`INHIBITION.REF.Conc(copies/µL)` > 0.5, "no", "yes")
+ddPCR.inhibition<-ddPCR.inhibition |> 
+  dplyr::select(Run, Target, Sample_ID, sample_id, Inhibition, Dilution, pcr_target) |>
+  dplyr::distinct(.keep_all = FALSE) |> # Remove duplicated rows
+  dplyr::rename(inhibition_method = pcr_target) |>
+  dplyr::mutate(Inhibition.assessed.using = tolower(inhibition_method))
+
+# 5. Split data
+final.ddPCR.inhibition.detected<-ddPCR.inhibition |>
+  dplyr::filter(Inhibition == "yes") |>
+  group_by(sample_id, Inhibition.assessed.using, Inhibition, inhibition_method) |>
+  summarize(DilutionInhibitionD = max(Dilution, na.rm=TRUE),
+            .groups = 'drop')
+final.ddPCR.inhibition.detected<-as.data.frame(final.ddPCR.inhibition.detected)
+
+final.ddPCR.inhibition.not.detected<-ddPCR.inhibition |>
+  dplyr::filter(Inhibition == "no") |>
+  group_by(sample_id, Inhibition.assessed.using, Inhibition, inhibition_method) |>
+  summarize(DilutionInhibitionND = max(Dilution, na.rm=TRUE),
+            .groups = 'drop')
+final.ddPCR.inhibition.not.detected<-as.data.frame(final.ddPCR.inhibition.not.detected)
+```
+
+```{r "ddPCR: Summary"}
+final.ddPCR<-ddPCR |>
+  dplyr::filter(tolower(Type) %in% c("main", "human-marker")) |>
+  dplyr::select(sample_id, City, sample_collect_date, wwtp_comments, analytic_comments, Target, run.date, pcr_target, pcr_gene_target, pcr_gene_target_ref, quant_stan_type, pcr_type, pcr_target_units, lod_ref, effective.volume.DF, PCR.GC.per.L, Concentration.GC.per.L.lower, Concentration.GC.per.L.upper, Internal.control.assessed.using, Inhibition.assessed.using, below_LOD, LOD, LOQ, NTC_amplified_count, NTC_count, quant_stan_type, stan_ref, Dilution, Type, Method)
+```
+
+
+
+
+```{r "qPCR: Note"}
+pander("Note: this script cannot process qPCR inhibition assay.")
+```
+
+```{r "Format qPCR data"}
+############# Prepare dPCR data ############# 
+
+# 1. Only select samples that do not need to be re-run or that are controled samples (i.e., duplicate sample). 
+data.qPCR<-data.qPCR |> dplyr::filter(NeedRerun %!in% c("need_rerun", "duplicate"))
+
+# 2. Merge qPCR and assay info 
+  # Determine the date the assays were ran
+data.qPCR$run.date<-stringr::str_split_fixed(data.qPCR$Run, "[ ]", 2)[,1]
+data.qPCR$run.date<-as.Date(data.qPCR$run.date, format="%Y-%m-%d")
+  # Merge qPCR and assay information
+data.qPCR$Target<-tolower(data.qPCR$Target)
+data.qPCR<-dplyr::inner_join(data.qPCR, info.assay, by = join_by(Target, between(run.date, Start, End))) #data.table::between
+
+# 3. FINAL qPCR: Merge both sample.info and qPCR datasets
+qPCR<-dplyr::inner_join(sample.info, data.qPCR, by="Sample_ID", relationship = "many-to-many")
+```
+
+```{r "qPCR: Concentrations"}
+#### Concentrations ####
+
+# 1. Convert Ct into GC per reaction
+  # Fix Ct
+qPCR <- qPCR |> dplyr::mutate_at(c('Cт'), ~tidyr::replace_na(.,0)) # replace NA by 0
+qPCR$Cт<-ifelse(qPCR$Cт=="Undetermined", 0, as.numeric(as.character(qPCR$Cт)))
+  # GC per reaction: y = slope + Cт + intercept
+qPCR$GC.per.rx<-10^((qPCR$Cт-qPCR$intercept)/(qPCR$slope))
+
+# 2. Convert GC per reaction to GC per L sewage
+  #Effective volume per rx (NOT taking into account the dilution factor (DF)): volume processed (mL) / ( (RNA elution volume / RNA volume used per reaction (5 uL) ) * 1000
+qPCR$effective.volume<-as.numeric(as.character(qPCR$Processed_Volume))/(as.numeric(as.character(qPCR$RNA_Elution_Volume))/qPCR$PCR.template.volume)*1000
+  # Effective volume per rx (TAKING into account the dilution factor (DF)): Effective volume / Dilution factor
+qPCR$effective.volume.DF<-qPCR$effective.volume/as.numeric(as.character(qPCR$Dilution))
+
+# 3. GC per L of sewage : GC per Rx (GC/uL) / Effective volume DF (uL) * 1000000
+qPCR$PCR.GC.per.L<-qPCR$GC.per.rx/qPCR$effective.volume.DF*1000000
+```
+
+```{r "qPCR: LOD/LOQ"}
+#### LOD and LOQ ####
+
+# 1. Define LOD threshold concentration (GC/L sewage): Volume Rx (uL) * minimum concentration detectable (LOD.conc.threshold) / Effective volume (taking into account the dilution factor) (uL)
+qPCR$LOD<-1000000*(qPCR$PCR.rx.volume*qPCR$`LOD.cp/uL.Rx`)/qPCR$effective.volume.DF
+  
+# 3. Define LOQ threshold concentration (GC/L sewage):  Volume Rx (uL) * minimum concentration quantifiable (LOQ.conc.threshold) / Effective volume (taking into account the dilution factor) (uL)
+qPCR$LOQ<-1000000*(qPCR$PCR.rx.volume*qPCR$`LOQ.cp/uL.Rx`)/qPCR$effective.volume.DF
+
+# 4. Define if target above/below level of detection
+qPCR$below_LOD<-ifelse(qPCR$PCR.GC.per.L < qPCR$LOD, 1, 0)
+```
+
+```{r "qPCR: NTC information"}
+#### NTC information ####
+
+# 1. Extract NTC-N1/N2 information for each run
+qPCR.NTC<-data.qPCR |> 
+  dplyr::filter(tolower(Sample_ID) == "ntc", Type %in% c("main", "human-marker")) |>
+  dplyr::select(Run, Target, Ct, `Ct.at.which.sample.is.considered.as.not.detected.(qPCR)`)
+
+# 2. Determine if NTC were amplified or not for each run \
+# A NTC is "not amplified" if the number of positive droplets is below the limit of detection
+qPCR.NTC$Amplified<-ifelse(qPCR.NTC$Ct<as.numeric(as.character(qPCR.NTC$`Ct.at.which.sample.is.considered.as.not.detected.(qPCR)`)) & qPCR.NTC$Ct > 0 ,1,0)
+
+# 3. Summarize the data per run \
+qPCR.NTC.summary<- qPCR.NTC |>
+  dplyr::group_by(Run, Target) |>
+  dplyr::summarize(NTC_amplified_count = sum(Amplified),
+            NTC_count = n(), 
+            .groups = 'drop')
+qPCR.NTC.summary<-as.data.frame(qPCR.NTC.summary)
+
+# 4. Merge qPCR and NTC data
+qPCR<-dplyr::left_join(qPCR, qPCR.NTC.summary, by=c("Target", "Run"))
+```
+
+```{r "qPCR: Summary"}
+final.qPCR<-qPCR |>
+  dplyr::filter(tolower(Type) %in% c("main", "human-marker")) |>
+  dplyr::select(sample_id, City, sample_collect_date, wwtp_comments, analytic_comments, Target, run.date, pcr_target, pcr_gene_target, pcr_gene_target_ref, quant_stan_type, pcr_type, pcr_target_units, lod_ref, effective.volume.DF, PCR.GC.per.L, Internal.control.assessed.using, Inhibition.assessed.using, below_LOD, LOD, LOQ, NTC_amplified_count, NTC_count, quant_stan_type, stan_ref, Dilution, Type, Method)
+```
+
+
+
+```{r "Merge ddPCR and qPCR datasets"}
+#### Merge ddPCR and qPCR datasets ####
+final.ddPCR.qPCR<-base::merge(final.ddPCR, final.qPCR, all.x = TRUE, all.y = TRUE)
+
+# Reformat the date (collection and run)
+final.ddPCR.qPCR$sample_collect_date<-suppressWarnings(as.Date(as.numeric(as.character(final.ddPCR.qPCR$sample_collect_date)), origin = "1899-12-30"))
+
+# Replace NA in NTC_amplified_count and NTC_count by 0
+final.ddPCR.qPCR<-final.ddPCR.qPCR |> mutate_at(c('NTC_amplified_count','NTC_count'), ~replace_na(.,0))
+```
+
+```{r "Simplify results if assays were run in multiple replicate on the same sample"}
+#### Simplify results if assays were run in multiple replicate on the same sample ####
+
+final.ddPCR.qPCR.aggregate<-final.ddPCR.qPCR |>
+  dplyr::filter(is.na(sample_id) == FALSE) |>
+  dplyr::group_by(sample_id, City, Method, sample_collect_date, Target, pcr_target, pcr_gene_target, pcr_gene_target_ref, quant_stan_type, pcr_type, pcr_target_units, lod_ref, Internal.control.assessed.using, Inhibition.assessed.using, stan_ref, Type) |>
+  dplyr::summarize(pcr_target_avg_conc = mean(PCR.GC.per.L, na.rm=TRUE), 
+                   pcr_target_std_error = round(sd(PCR.GC.per.L, na.rm=TRUE)/sqrt(length(PCR.GC.per.L[!is.na(PCR.GC.per.L)])), digits = 3),
+                   pcr_target_cl_95_lo = round(mean(Concentration.GC.per.L.lower, na.rm=TRUE), digits = 3),
+                   pcr_target_cl_95_up = round(mean(Concentration.GC.per.L.upper, na.rm=TRUE), digits = 3),
+                   pcr_target_below_lod = ifelse(sum(below_LOD, na.rm=TRUE) > 1, "yes", "no"), 
+                   lod_sewage = round(mean(LOD, na.rm=TRUE), digits = 3),
+                   loq_sewage = round(mean(LOQ, na.rm=TRUE), digits = 3),
+                   num_no_target_control = max(NTC_count, na.rm = TRUE),
+                   ntc_amplify = ifelse(sum(NTC_amplified_count, na.rm=TRUE)>0, "yes", "no"),
+                   equiv_sewage_amt = mean(effective.volume.DF, na.rm=TRUE)/1000,
+                   Dilution = max(Dilution, na.rm=TRUE), #For inhibition
+                   test_result_date = max(run.date, na.rm=TRUE),
+                   analytic_comments = paste(unique(analytic_comments, na.rm=TRUE), collapse = ";"),
+                   wwtp_comments = paste(unique(wwtp_comments, na.rm=TRUE), collapse = ";"),
+                   .groups = 'drop')
+final.ddPCR.qPCR.aggregate<-as.data.frame(final.ddPCR.qPCR.aggregate)
+final.ddPCR.qPCR.aggregate[is.nan(final.ddPCR.qPCR.aggregate)]<-NA
+```
+
+```{r "Add inhibition data"}
+#### Add inhibition data ####
+
+# Merge final.ddPCR.qPCR.aggregate with final.ddPCR.inhibition.not.detected
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, final.ddPCR.inhibition.not.detected, by=c("sample_id", "Inhibition.assessed.using"))
+final.ddPCR.qPCR.aggregate$inhibition_detect<-ifelse(final.ddPCR.qPCR.aggregate$Dilution>=final.ddPCR.qPCR.aggregate$DilutionInhibitionND, final.ddPCR.qPCR.aggregate$Inhibition, NA) # Merge NOT DETECTED INHIBITION: If dilution-assay is greater or equal to the dilution-inhibition, then no inhibition was detected
+
+# Merge final.ddPCR.qPCR.aggregate with final.ddPCR.inhibition.detected
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate |> dplyr::select(-Inhibition), final.ddPCR.inhibition.detected, by=c("sample_id", "Inhibition.assessed.using"))
+final.ddPCR.qPCR.aggregate$inhibition_detect<-ifelse(final.ddPCR.qPCR.aggregate$Dilution<=final.ddPCR.qPCR.aggregate$DilutionInhibitionD & is.na(final.ddPCR.qPCR.aggregate$inhibition_detect)==TRUE, final.ddPCR.qPCR.aggregate$Inhibition, final.ddPCR.qPCR.aggregate$inhibition_detect) # Merge DETECTED INHIBITION: If dilution-assay is less or equal to the dilution-inhibition, then inhibition was detected
+
+# Replace NA in inhibition_detect by "not_tested"
+final.ddPCR.qPCR.aggregate["inhibition_detect"][is.na(final.ddPCR.qPCR.aggregate["inhibition_detect"])] <- "not_tested"
+
+# Create "inhibition_method"
+final.ddPCR.qPCR.aggregate$inhibition_method<-ifelse(is.na(final.ddPCR.qPCR.aggregate$DilutionInhibitionD) == TRUE & is.na(final.ddPCR.qPCR.aggregate$DilutionInhibitionND) == TRUE, "none", NA)
+final.ddPCR.qPCR.aggregate$inhibition_method<-ifelse(is.na(final.ddPCR.qPCR.aggregate$inhibition_method), final.ddPCR.qPCR.aggregate$inhibition_method.x, final.ddPCR.qPCR.aggregate$inhibition_method) # Add inhibition_method from inhibition_method.x
+final.ddPCR.qPCR.aggregate$inhibition_method<-ifelse(is.na(final.ddPCR.qPCR.aggregate$inhibition_method), final.ddPCR.qPCR.aggregate$inhibition_method.y, final.ddPCR.qPCR.aggregate$inhibition_method) # Add inhibition_method from inhibition_method.y
+
+# Create "inhibition_adjust" info
+final.ddPCR.qPCR.aggregate$inhibition_adjust<-ifelse(final.ddPCR.qPCR.aggregate$inhibition_detect == "not_tested", "no",
+                                                     ifelse(final.ddPCR.qPCR.aggregate$Dilution == 1, "no",  # If assay was tested undiluted, no matter inhibition was found or not, "no" adjustment was performed
+                                                            ifelse(final.ddPCR.qPCR.aggregate$Dilution > 1 & final.ddPCR.qPCR.aggregate$inhibition_detect == "yes", "no", # If assay was ran diluted, if inhibition was detected at that dilution, then "no" adjustment was performed
+                                                                   ifelse(final.ddPCR.qPCR.aggregate$Dilution > 1 & final.ddPCR.qPCR.aggregate$inhibition_detect == "no", "no", NA)))) # If assay was ran diluted, if inhibition was not detected at that dilution, then "no" adjustments were undertaken to compensate the inhibition. 
+```
+
+```{r "Add Internal control data"}
+#### Add Internal control data ####
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, final.BCoV, by = c("Internal.control.assessed.using", "sample_id")) #data.table::between
+```
+
+```{r "Add methods info"}
+#### Add methods info ####
+
+  # Only keep info.method with info
+info.method<-info.method |> dplyr::filter(!is.na(Method))
+
+  # Merge ddPCR and method information
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, info.method, by = "Method") #data.table::between
+```
+
+```{r "Add WWTP info"}
+#### Add WWTP info ####
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, info.WWTP, by = "City") #data.table::between
+```
+
+```{r "Add physico-chemical info"}
+#### Add physico-chemical info ####
+metadata.parameter$sample_collect_time <- format(strptime(metadata.parameter$sample_collect_time, "%I:%M %p"), "%H:%M")
+final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, metadata.parameter, by = "sample_id")
+```
+
+
+
+```{r "Only release samples (sample_id) that have at least one 'main' assay"}
+samples.main.assay<-final.ddPCR.qPCR.aggregate |>
+  dplyr::filter(Type == "main") |> 
+  dplyr::select(sample_id) |>
+  dplyr::distinct(sample_id)
+final.ddPCR.qPCR.release.1 <- final.ddPCR.qPCR.aggregate |>
+  dplyr::filter(sample_id %in% samples.main.assay$sample_id)
+```
+
+```{r "Only release samples (sample_id) with flow"}
+samples.with.flow<-final.ddPCR.qPCR.aggregate |>
+  dplyr::filter(is.na(flow_rate) == FALSE) |> 
+  dplyr::select(sample_id) |>
+  dplyr::distinct(sample_id)
+final.ddPCR.qPCR.release.2 <- final.ddPCR.qPCR.release.1 |>
+  dplyr::filter(sample_id %in% samples.main.assay$sample_id)
+```
+
+
+```{r "Prepare data for export"}
+final.report<-final.ddPCR.qPCR.release.2 |>
+  dplyr::select(wwtp_name, sample_location, sample_location_specify, institution_type, sample_type, composite_freq, sample_matrix, sample_id, wwtp_comments, solids_separation, concentration_method, extraction_method, rec_eff_target_name, rec_eff_spike_matrix, rec_eff_spike_conc, pasteurized, pcr_target, pcr_gene_target, pcr_gene_target_ref, pcr_type, lod_ref, quant_stan_type, stan_ref, inhibition_method, num_no_target_control, pcr_target_units, pcr_target_avg_conc, pcr_target_std_error, pcr_target_cl_95_lo, pcr_target_cl_95_up, pcr_target_below_lod, lod_sewage, loq_sewage, ntc_amplify, rec_eff_percent, inhibition_detect, inhibition_adjust, analytic_comments, sample_collect_date, sample_collect_time, test_result_date, flow_rate, equiv_sewage_amt, ph, conductivity, tss, collection_water_temp)
+
+# Simplify num_no_target_control
+final.report$num_no_target_control<-ifelse(final.report$num_no_target_control > 3, "more than 3", final.report$num_no_target_control)
+
+# Replace NAN by NA
+final.report[is.nan(final.report)]<-NA
+
+# Remove NA comments
+final.report$wwtp_comments<-gsub(";NA", "", final.report$wwtp_comments)
+final.report$analytic_comments<-gsub(";NA", "", final.report$analytic_comments)
+
+# Transformed NA comments into real NA
+final.report$wwtp_comments<-ifelse(final.report$wwtp_comments == "NA", NA, final.report$wwtp_comments)
+final.report$analytic_comments<-ifelse(final.report$analytic_comments == "NA", NA, final.report$analytic_comments)
+
+
+# Reformat time and date
+#final.report$sample_collect_time2 <- format(strptime(final.report$sample_collect_time, "%I:%M %p"), "%H:%M")
+final.report$sample_collect_date<-format(as.Date(final.report$sample_collect_date), "%m/%d/%Y")
+final.report$test_result_date<-format(as.Date(final.report$test_result_date), "%m/%d/%Y")
+
+```
+
+\
+
+Report saved here:
+```{r "Export", include=FALSE}
+# # Export in report directory
+write.table(final.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_v2_", current_time, ".tsv"), row.names = FALSE, quote = FALSE, sep = "\t", col.names = TRUE)
+pander(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_v2_", current_time, ".tsv"))
+```
+
+\
+\
+\
+
+### Samples ignored in the sections below
+
+```{r "Samples to ignore"}
+## Import samples to ignore
+samples.to.ignore<-suppressWarnings(read.table("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/samples_to_ignore.txt", h=F))
+names(samples.to.ignore)<-"sample_id"
+cat("Sample(s) ignored in this section:")
+cat(paste(samples.to.ignore$sample_id))
+
+## Remove these samples from databases
+final.ddPCR.qPCR.aggregate<-final.ddPCR.qPCR.aggregate |> dplyr::filter(sample_id %!in% samples.to.ignore$sample_id)
+sample.info<-sample.info |> dplyr::filter(sample_id %!in% samples.to.ignore$sample_id)
+metadata.parameter<-metadata.parameter |> dplyr::filter(sample_id %!in% samples.to.ignore$sample_id)
+final.ddPCR.qPCR.release.2<-final.ddPCR.qPCR.release.2 |> dplyr::filter(sample_id %!in% samples.to.ignore$sample_id)
+```
+
+\
+
+## Check anomalies
+
+```{r "Check results"}
+
+## List samples that do not have a 'main' assay
+samples.NOT.main.assay<-unique(final.ddPCR.qPCR.aggregate$sample_id)[which(unique(final.ddPCR.qPCR.aggregate$sample_id) %!in% samples.main.assay$sample_id)]
+if(length(samples.NOT.main.assay)>0){
+  #pander("Samples not released because a main-assay (e.g., N1, N2, influenza, etc.) is missing:")
+  cat("No main-assay (e.g., N1, N2, influenza, etc.) for the sample_id:")
+  cat(samples.NOT.main.assay)
+}
+
+## List samples that do not have flow
+samples.NOT.flow<-unique(final.ddPCR.qPCR.aggregate$sample_id)[which(unique(final.ddPCR.qPCR.aggregate$sample_id) %!in% samples.with.flow$sample_id)]
+if(length(samples.NOT.flow)>0){
+  cat("No reported flow for sample_id:")
+  cat(paste(samples.NOT.flow))
+}
+
+## Check that numeric fields are numeric - sample.info
+check.na.numerical.fields.2<-sample.info |> 
+  dplyr::select(sample_id, BCoV_Titer_Concentration, Volume_BCoV_Spiked, Processed_Volume, Total_buffer_volume_before_extraction, Volume_buffer_extracted_after_beat_bashing, RNA_Elution_Volume)
+check.na.numerical.fields.2[is.na(check.na.numerical.fields.2)]<-999 # Replace all NA by 999
+suppressWarnings(check.na.numerical.fields.2<-check.na.numerical.fields.2 |> mutate_if(is.character, as.numeric)) # Convert all characters into numeric
+check.na.numerical.fields.2<-check.na.numerical.fields.2[!complete.cases(check.na.numerical.fields.2), names(which(colSums(is.na(check.na.numerical.fields.2)) > 0))] # Select rows and columns with NA in table (means that could not be properly converted into numeric value)
+if(nrow(check.na.numerical.fields.2)>0){
+  check.na.numerical.fields.2<-sample.info |>
+    dplyr::select(names(check.na.numerical.fields.2)) |>
+    dplyr::slice(as.integer(as.character(row.names(check.na.numerical.fields.2))))
+  pander(check.na.numerical.fields.2, caption = "Non-numerical values in the 'Sample Extraction' tab:")
+}
+
+## Check that numeric fields are numeric - metadata
+check.na.numerical.fields.1<-metadata.parameter |> 
+  dplyr::select(-sample_collect_time)
+check.na.numerical.fields.1[is.na(check.na.numerical.fields.1)]<-999 # Replace all NA by 999
+suppressWarnings(check.na.numerical.fields.1<-check.na.numerical.fields.1 |> mutate_if(is.character, as.numeric)) # Convert all characters into numeric
+check.na.numerical.fields.1<-check.na.numerical.fields.1[!complete.cases(check.na.numerical.fields.1), names(which(colSums(is.na(check.na.numerical.fields.1)) > 0))] # Select rows with NA in table (means that could not be properly converted into numeric value)
+if(nrow(check.na.numerical.fields.1)>0){
+  check.na.numerical.fields.1<-metadata.parameter |>
+    dplyr::select(names(check.na.numerical.fields.1)) |>
+    dplyr::slice(as.integer(as.character(row.names(check.na.numerical.fields.1))))
+  pander(check.na.numerical.fields.1, caption = "Non-numerical values in phycico-chemical metadata:")
+}
+
+## Check that numeric fields are numeric - ddPCR
+check.na.numerical.fields.3<-data.ddPCR |> 
+  dplyr::select(Dilution, `Conc(copies/µL)`, Accepted.Droplets, Positives)
+check.na.numerical.fields.3[is.na(check.na.numerical.fields.3)]<-999 # Replace all NA by 999
+suppressWarnings(check.na.numerical.fields.3<-check.na.numerical.fields.3 |> mutate_if(is.character, as.numeric)) # Convert all characters into numeric
+check.na.numerical.fields.3<-check.na.numerical.fields.3[!complete.cases(check.na.numerical.fields.3), names(which(colSums(is.na(check.na.numerical.fields.3)) > 0))] # Select rows with NA in table (means that could not be properly converted into numeric value)
+if(nrow(check.na.numerical.fields.3)>0){
+  check.na.numerical.fields.3<-data.ddPCR |>
+    dplyr::select(names(check.na.numerical.fields.3)) |>
+    dplyr::slice(as.integer(as.character(row.names(check.na.numerical.fields.3))))
+  pander(check.na.numerical.fields.3, caption = "Non-numerical values in the 'ddPCR' tab:")
+}
+
+## Check that numeric fields are numeric - qPCR
+check.na.numerical.fields.4<-data.qPCR |> 
+  dplyr::select(Dilution, Ct)
+check.na.numerical.fields.4[is.na(check.na.numerical.fields.4)]<-999 # Replace all NA by 999
+suppressWarnings(check.na.numerical.fields.4<-check.na.numerical.fields.4 |> mutate_if(is.character, as.numeric)) # Convert all characters into numeric
+check.na.numerical.fields.4<-check.na.numerical.fields.4[!complete.cases(check.na.numerical.fields.4), names(which(colSums(is.na(check.na.numerical.fields.4)) > 0))] # Select rows with NA in table (means that could not be properly converted into numeric value)
+if(nrow(check.na.numerical.fields.4)>0){
+  check.na.numerical.fields.4<-data.qPCR |>
+    dplyr::select(names(check.na.numerical.fields.4)) |>
+    dplyr::slice(as.integer(as.character(row.names(check.na.numerical.fields.4))))
+  pander(check.na.numerical.fields.4, caption = "Non-numerical values in the 'qPCR' tab:")
+}
+
+```
+
+\
+\
+\
+
+## Targets released to DHS
+ 
+ Blue tiles indicate that data were transmitted to DHS. 
+
+```{r "Visual: Released targets", out.width="110%", fig.height=10}
+
+## List samples flagged as "yes" for visualization in info.WWTP
+wwtp.visuals<-info.WWTP |> dplyr::filter(tolower(Plot.on.html.report) == "yes") |> select(wwtp_name)
+
+## Plot 1
+check.table<-final.ddPCR.qPCR.release.2 |>
+  dplyr::select(wwtp_name, sample_collect_date, sample_id, Target, pcr_target_avg_conc, rec_eff_percent, flow_rate) |>
+  tidyr::gather(key = "variable", value = "measurement", pcr_target_avg_conc, rec_eff_percent, flow_rate) |>
+  dplyr::mutate(variable = ifelse(variable=="pcr_target_avg_conc", Target, variable),
+         measurement = 1) |>
+  dplyr::select(wwtp_name, sample_collect_date, sample_id, variable, measurement) |>
+  dplyr::distinct()
+
+check.table<-check.table |>
+  dplyr::filter(sample_collect_date >seq(Sys.Date(), length = 2, by = "-2 months")[2], # Only select data collected within the last 2 months
+         wwtp_name %in% wwtp.visuals[,1]) # Only display the WWTPs listed as "yes" in info.WWTP
+
+check.table$variable <- dplyr::recode(check.table$variable, 
+                                      "rec_eff_percent" = "bcov",
+                                      "flow_rate" = "flow")
+
+ggplot(check.table, aes(x=as.character(sample_collect_date), y=variable, fill=measurement)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label=sample_id), size = 2) + 
+  facet_wrap(~wwtp_name, scales = "free", ncol = 2) +
+  theme_bw() +
+  theme(legend.position="none",
+        axis.text.x = element_text(size = 5, angle = 45, hjust = 1, vjust = 1, face = "plain"),
+        axis.text.y = element_text(size = 8, angle = 0, hjust = 1, vjust = 0, face = "plain"),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank())
+
+
+```
+
+\
+\
+
+## Time trends
+
+```{r "Visual: Time trend", dpi=300, out.width="110%", fig.height=50, warning=FALSE}
+data.visuals<-final.ddPCR.qPCR.release.2 |>
+  dplyr::filter(wwtp_name %in% wwtp.visuals[,1])
+data.visuals$interval<-ifelse(data.visuals$sample_collect_date > seq(Sys.Date(), length = 2, by = "-2 months")[2], "2 months", 
+                              ifelse(data.visuals$sample_collect_date > seq(Sys.Date(), length = 2, by = "-6 months")[2], "6 months", "rest"))
+
+df <- SharedData$new(data.visuals)
+
+gg <- ggplot(df, aes(x=sample_collect_date, y=pcr_target_avg_conc, group=1, fill=inhibition_detect, label = sample_id)) + 
+  geom_bar(stat="identity", position="identity", linewidth=.3) + 
+  # geom_bar(position = position_dodge2 (width = 1), stat = "identity", linewidth=.3) + 
+  facet_wrap(~wwtp_name, scales = "free_y", ncol = 1) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+  geom_point(aes(y = lod_sewage), color="red", size=1) +
+  geom_point(aes(y = loq_sewage), color="blue", size=1) +
+  theme(legend.position="none",
+        axis.title.x=element_blank(), 
+        axis.title.y=element_blank(),
+        panel.spacing = unit(2, "lines")) + # panel spacing
+  ggtitle("Concentration (cp/L)")
+
+gg.l <- ggplot(df, aes(x=sample_collect_date, y=log10(pcr_target_avg_conc + 1), group=1, fill=inhibition_detect, label = sample_id)) + 
+  geom_bar(stat="identity", position="identity", linewidth=.3) + 
+  facet_wrap(~wwtp_name, scales = "free_y", ncol = 1) +
+  geom_point(aes(y = log10(lod_sewage+1)), color="red", size=1) +
+  geom_point(aes(y = log10(loq_sewage+1)), color="blue", size=1) +
+  theme(axis.title.x=element_blank(), 
+        axis.title.y=element_blank(),
+        panel.spacing = unit(2, "lines")) + # panel spacing
+  ggtitle("LOG10 concentration log10(cp/L + 1)")
+
+gg.bcov <- ggplot(df, aes(x=sample_collect_date, y=rec_eff_percent, label = sample_id)) + 
+        geom_point() + 
+        facet_wrap(~wwtp_name, scales = "free_y") + 
+        scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+        theme_bw() + 
+        theme(axis.title.x=element_blank(), 
+          axis.title.y=element_blank(),
+          panel.spacing = unit(2, "lines")) +
+        ggtitle("BCoV recovery (%)")
+
+gg.flow <- ggplot(df, aes(x=sample_collect_date, y=as.numeric(as.character(flow_rate)), label = sample_id)) + 
+        geom_point() + 
+        facet_wrap(~wwtp_name, scales = "free_y") + 
+        scale_x_date(date_breaks = "1 week", date_labels = "%b %d") +
+        theme_bw() + 
+        theme(axis.title.x = element_blank()) + 
+        ggtitle("Flow rate (MDG)") + ylab("")
+
+filter <- bscols(
+  filter_select("variable", "Target", df, ~as.factor(Target), multiple=FALSE),
+  filter_checkbox("time.selection", "Time", df, ~interval, inline = TRUE),
+  ggplotly(gg, dynamicTicks = TRUE, height = 1000),
+  ggplotly(gg.l, dynamicTicks = TRUE, height = 1000),
+  ggplotly(gg.bcov, dynamicTicks = TRUE, height = 800),
+  ggplotly(gg.flow, dynamicTicks = TRUE, height = 800),
+  widths = c(12,12,5,6,12,12)
+)
+
+bscols(filter)
+```
+  
+\
+\
+
+#  Missing mandatory fields
+
+```{r "Final check"}
+
+## Check if NAs in fields that should NOT have NAs
+check.na.mandatory.fields<-final.ddPCR.qPCR.release.2 |>
+  dplyr::select(wwtp_name, sample_location, sample_type, sample_matrix, sample_id, solids_separation, concentration_method, extraction_method, rec_eff_target_name, rec_eff_spike_matrix, pasteurized, pcr_target, pcr_gene_target, pcr_gene_target_ref, pcr_type, lod_ref, quant_stan_type, inhibition_method, num_no_target_control, pcr_target_units, pcr_target_avg_conc, pcr_target_below_lod, lod_sewage, loq_sewage, ntc_amplify, rec_eff_percent, sample_collect_date, sample_collect_time, test_result_date, flow_rate, equiv_sewage_amt, sample_collect_date, rec_eff_spike_conc, inhibition_detect, inhibition_adjust)
+check.na.mandatory.fields <- check.na.mandatory.fields |>
+  dplyr::mutate(across(-sample_id, is.na)) |>  # replace all NA with TRUE and else FALSE
+  tidyr::pivot_longer(-sample_id, names_to = "var") |>  # pivot longer
+  dplyr::filter(value) |>   # remove the FALSE rows
+  dplyr::group_by(sample_id) |>    # group by the ID
+  dplyr::summarise(`Missing field(s)` = toString(unique(var))) # convert the variable names to a string column
+if(nrow(check.na.mandatory.fields)>0){
+  pander("Mandatory fields are missings:")
+  pander(check.na.mandatory.fields)
+}
+
+```

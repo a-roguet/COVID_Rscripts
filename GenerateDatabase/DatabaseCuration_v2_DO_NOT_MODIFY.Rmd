@@ -1,0 +1,147 @@
+---
+title: "Only export new data - CDC/DHS report"
+date: "`r format(Sys.time(), '%a %d %b %Y')`"
+output:                 
+  html_document: 
+    css: "style.css"        
+    code_download: true 
+    code_folding: 'hide'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+```
+
+```{css echo=FALSE}
+.code-folding-btn {
+  display: none;
+}
+```
+
+```{r echo=FALSE}
+rm(list=ls(all=FALSE))
+ls()
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(pander)
+library(stringr)
+library(kableExtra)
+'%!in%' <- function(x,y)!('%in%'(x,y)) 
+```
+
+***
+
+```{r "Import current report"}
+# Define current folder
+current.folder<-dirname(rstudioapi::getSourceEditorContext()$path)
+current.folder<-gsub(".*Curation/","", current.folder)
+cat(paste0("Current folder: ", current.folder))
+
+# Import current report
+current.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/uwm_report_v2_", current.folder, ".tsv"), h=T, sep = "\t")
+```
+
+```{r "Report number"}
+# Define new report number
+report.num<-suppressWarnings(read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", previous.folder, "/version.txt"), h=F))[1,1]
+cat(paste0("New report: No. ", report.num+1)) 
+```
+
+```{r "Import previous report"}
+# Define previous folder
+previous.folder<-read.table(paste0("~/WS/UWMReformat/Curation/", current.folder, "/previous_folder.txt"), h=F)[1, 1]
+cat(paste0("Previous folder: ", previous.folder))
+
+# Import previous report
+previous.report<-suppressWarnings(read.table(paste0("~/WS/UWMReformat/Curation/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t"))
+previous.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t")
+```
+
+\
+\
+\
+
+```{r "Identify new samples"}
+### Identify new samples
+data.new.sample<-current.report |> 
+  dplyr::filter(sample_id %!in% c(previous.report$sample_id))
+pander(data.new.sample |> select(sample_id, wwtp_name, sample_collect_date) |> distinct(), caption = "New samples")
+```
+
+\
+\
+
+```{r "Identify samples with new targets"}
+## Identify samples with new targets
+data.new.target<-current.report |> 
+  dplyr::filter(sample_id %in% c(previous.report$sample_id)) |> # Ignore the "new" samples
+  dplyr::mutate(sample_id_gene = paste0(sample_id, "&", pcr_gene_target)) |> # Create new variable
+  dplyr::filter(sample_id_gene %!in% paste0(previous.report$sample_id, "&", previous.report$pcr_gene_target)) # Select lines with new targets
+pander(data.new.target |> select(sample_id, wwtp_name, sample_collect_date, pcr_gene_target), caption = "Samples with new targets")
+```
+
+\
+\
+
+```{r "Identify samples with updated data"}
+## Identify samples with updated data
+
+### Prepare the databases
+
+  # Remove sample_id found in data.new.sample and/or data.new.target
+current.report.strip<-current.report |> 
+  dplyr::filter(sample_id %!in% c(data.new.sample$sample_id, data.new.target$sample_id))
+previous.report.strip<-previous.report |> 
+  dplyr::filter(sample_id %!in% c(data.new.sample$sample_id, data.new.target$sample_id))
+
+  # Round all numeric variables
+current.report.strip <-current.report.strip %>% mutate_if(is.numeric, round, digits=2)
+previous.report.strip <-previous.report.strip %>% mutate_if(is.numeric, round, digits=2)
+
+  # Convert all factors in characters
+i <- sapply(current.report.strip, is.factor)
+current.report.strip[i] <- lapply(current.report.strip[i], as.character)
+
+j <- sapply(previous.report.strip, is.factor)
+previous.report.strip[j] <- lapply(previous.report.strip[j], as.character)
+
+ # Convert NAs into "-"
+current.report.strip[is.na(current.report.strip)]<-"-"
+previous.report.strip[is.na(previous.report.strip)]<-"-"
+
+
+### Identify cells that are different between old and new reports
+data.comparison <- data.frame(1 * (previous.report.strip != current.report.strip)) # If you have an error at that line, it is most likely that you have an issue in the BigSpreadsheet = A samples listed in the last report is not anymore in the BigSpreadsheet, because your OneDrive is not up to date, syncing issue, deleted row? You will have to investigate.
+list.modified.samples<-which(rowSums(data.comparison) > 0)
+data.updated.sample<-current.report.strip[list.modified.samples, ]
+
+row.names(data.updated.sample) <- NULL
+pander(data.updated.sample |> select(sample_id, wwtp_name, sample_collect_date) |> distinct(), caption = "Samples updated values")
+```
+
+
+
+\
+\
+\
+
+
+```{r "Extract NEW and UPDATED samples"}
+## Extract NEW and UPDATED samples
+export.report<-current.report |>
+  dplyr::filter(sample_id %in% c(data.new.sample$sample_id, data.new.target$sample_id, data.updated.sample$sample_id))
+
+kableExtra::kable(export.report, "html", caption = paste0("Samples released to DHS in report No. ", report.num +1, ":")) %>% kableExtra::kable_styling("striped") %>% kableExtra::scroll_box(width = "100%")
+```
+
+
+
+
+```{r "Export data"}
+write.table(export.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/uwm_report_v2_", current.folder, "_v", stringr::str_pad(report.num + 1, 4, pad = "0"), ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
+write.table(report.num+1, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/version.txt"), row.names = FALSE, quote = FALSE, col.names = FALSE)
+```
+
+
