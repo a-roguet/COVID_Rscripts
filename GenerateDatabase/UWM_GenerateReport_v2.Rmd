@@ -58,6 +58,7 @@ current_time<-format(Sys.time(), "%Y-%m-%d_%H%M")
 
 # 1. ddPCR data are stored in the tab "Raw data ddPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/
 data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4:22))
+# data.ddPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Raw data ddPCR", colNames = TRUE, startRow = 4, cols=c(4:22))
 
 data.ddPCR<-subset(data.ddPCR, Run != "NA")
 if(anyNA(data.ddPCR$Dilution)==TRUE) {stop("You forgot to add the dilution factor :-)")}
@@ -70,22 +71,30 @@ data.ddPCR <- data.ddPCR |>
 
 # 2. qPCR data are stored in the tab "Raw data qPCR" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
 data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
+# data.qPCR<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Raw data qPCR", colNames = TRUE, startRow = 4)
 
 # rename fields sent to DHS/CDC
+#colnames(data.qPCR)[colnames(data.qPCR) == "CDC_analytical_comment"] ="analytic_comments"
 data.qPCR <- data.qPCR |> 
   dplyr::rename(analytic_comments = CDC_analytical_comment)
 # select fields of interest
 data.qPCR <- data.qPCR |> 
-  dplyr::select(Dilution, analytic_comments, Run, Sample_ID, Target, Cт, NeedRerun)
+  dplyr::select(Dilution, analytic_comments, Run, Sample_ID, Target, Ct, NeedRerun)
 
 # 3. Sample info are stored in the tab "Sample extraction" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
-sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
 # rename fields sent to DHS/CDC
+# colnames(sample.info)[colnames(sample.info) == "CV"] ="sample_id"
+# colnames(sample.info)[colnames(sample.info) == "CV_Filter_ID"] ="Sample_ID"
+# colnames(sample.info)[colnames(sample.info) == "Collection_Date_Start"] ="sample_collect_date"
+# colnames(sample.info)[colnames(sample.info) == "WWTPComments_for_CDC"] ="wwtp_comments"
 sample.info <- sample.info |> 
   dplyr::rename(sample_id = CV,
                 Sample_ID = CV_Filter_ID,
                 sample_collect_date = Collection_Date_Start,
                 wwtp_comments = WWTPComments_for_CDC)
+                
 # select fields of interest
 sample.info <- sample.info |> 
   dplyr::select(sample_id, Sample_ID, City, Method, sample_collect_date, BCoV_Titer_Concentration, Volume_BCoV_Spiked, wwtp_comments, `ReleaseData?`, Processed_Volume, Total_buffer_volume_before_extraction, Volume_buffer_extracted_after_beat_bashing, RNA_Elution_Volume)
@@ -101,6 +110,8 @@ duplicate.CV<-subset(metadata.parameter, CV!="NA")
 duplicate.CV.list<-duplicate.CV[which(duplicated(metadata.parameter$CV)==TRUE), c("CV")]
 duplicate.CV<-subset(duplicate.CV, CV %in% duplicate.CV.list)
 if(nrow(duplicate.CV) != 0) {stop(paste("Two samples have same CV number in WWTP parameters! ", as.character(duplicate.CV.list), " located in the WWTPs tabs: ", unique(duplicate.CV$Facility)))}
+
+
 # rename fields sent to DHS/CDC
 metadata.parameter <- metadata.parameter |> 
   dplyr::rename(sample_id = CV,
@@ -115,15 +126,15 @@ metadata.parameter <- metadata.parameter |>
   dplyr::select(sample_id, flow_rate, tss, ph, conductivity, collection_water_temp, sample_collect_time)
 
 # 5. Information about WWTPs is stored in the tab "WWTP" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
-info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "WWTP", colNames = TRUE)
+info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", sheet = "WWTP", colNames = TRUE)
 
 
 # 6. Information about methods is stored in the tab "method" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/
-info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "method", colNames = TRUE)
+info.method<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", sheet = "method", colNames = TRUE)
 
 
 # 7. Information about assays is stored in the tab "assay" in the excel file "WWTP_Methods_info.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/DATA/.
-info.WWTP<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA//WWTP_Methods_Assays_info.xlsx", sheet = "assay", colNames = TRUE)
+info.assay<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", sheet = "assay", colNames = TRUE)
 
 # rename fields sent to DHS/CDC
 info.assay <- info.assay |> 
@@ -143,19 +154,21 @@ info.assay <- info.assay |>
 
 ```{r "Backup files", echo=FALSE, message=FALSE, results='hide'}
 ############# Backup files ############# 
-dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/"))
-dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/"))
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/"))
+dir.create(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/RawData/"))
 
-rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("UWM_SARS-CoV-2_report*.Rmd"))
-file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", gsub("_OPEN_KNIT", "_DO_NOT_MODIFY", rmd)), overwrite = TRUE, copy.mode = TRUE)
+rmd<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", pattern=glob2rx("UWM_SARS-CoV-2_report*.Rmd"))
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", rmd), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/", gsub("_OPEN_KNIT", "_DO_NOT_MODIFY", rmd)), overwrite = TRUE, copy.mode = TRUE)
 
-rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", pattern=glob2rx("DatabaseCuration_v2_DO_NOT_MODIFY*.Rmd"))
-file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/", gsub("_DO_NOT_MODIFY", "_OPEN_MODIFY_KNIT", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
+rmd.sample.selection<-list.files("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", pattern=glob2rx("DatabaseCuration_v2_DO_NOT_MODIFY*.Rmd"))
+file.copy(from=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", rmd.sample.selection), to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/", gsub("_DO_NOT_MODIFY", "_OPEN_MODIFY_KNIT", rmd.sample.selection)), overwrite = TRUE, copy.mode = TRUE)
 
-file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
-copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
-file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/RawData/WWTP_Methods_Assay_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/RawData/SARS-CoV-2_database_BigSpreadsheet.xlsx"), overwrite = TRUE, copy.mode = TRUE)
+copyDirectory(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTPs_parameters/", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/RawData/WWTPs_parameters/"), private=TRUE, recursive=TRUE)
+file.copy(from="~/OneDrive - UWM/SARS-CoV-2/DATA/WWTP_Methods_Assays_info.xlsx", to=paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/RawData/WWTP_Methods_Assay_info.xlsx"), overwrite = TRUE, copy.mode = TRUE)
 
+previous.folder=""
+write.table(previous.folder, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/previous_folder.txt"), quote=FALSE, row.names = FALSE, col.names = FALSE)
 ```
  
  
@@ -413,10 +426,10 @@ qPCR<-dplyr::inner_join(sample.info, data.qPCR, by="Sample_ID", relationship = "
 
 # 1. Convert Ct into GC per reaction
   # Fix Ct
-qPCR <- qPCR |> dplyr::mutate_at(c('Cт'), ~tidyr::replace_na(.,0)) # replace NA by 0
-qPCR$Cт<-ifelse(qPCR$Cт=="Undetermined", 0, as.numeric(as.character(qPCR$Cт)))
-  # GC per reaction: y = slope + Cт + intercept
-qPCR$GC.per.rx<-10^((qPCR$Cт-qPCR$intercept)/(qPCR$slope))
+qPCR <- qPCR |> dplyr::mutate_at(c('Ct'), ~tidyr::replace_na(.,0)) # replace NA by 0
+qPCR$Ct<-ifelse(qPCR$Ct=="Undetermined", 0, as.numeric(as.character(qPCR$Ct)))
+  # GC per reaction: y = slope + Ct + intercept
+qPCR$GC.per.rx<-10^((qPCR$Ct-qPCR$intercept)/(qPCR$slope))
 
 # 2. Convert GC per reaction to GC per L sewage
   #Effective volume per rx (NOT taking into account the dilution factor (DF)): volume processed (mL) / ( (RNA elution volume / RNA volume used per reaction (5 uL) ) * 1000
@@ -557,6 +570,9 @@ final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, info.WW
 
 ```{r "Add physico-chemical info"}
 #### Add physico-chemical info ####
+final.ddPCR.qPCR.aggregate$sample_id<- as.numeric(final.ddPCR.qPCR.aggregate$sample_id)
+metadata.parameter$sample_id<- as.numeric(metadata.parameter$sample_id)
+
 metadata.parameter$sample_collect_time <- format(strptime(metadata.parameter$sample_collect_time, "%I:%M %p"), "%H:%M")
 final.ddPCR.qPCR.aggregate<-dplyr::left_join(final.ddPCR.qPCR.aggregate, metadata.parameter, by = "sample_id")
 ```
@@ -613,8 +629,8 @@ final.report$test_result_date<-format(as.Date(final.report$test_result_date), "%
 Report saved here:
 ```{r "Export", include=FALSE}
 # # Export in report directory
-write.table(final.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_v2_", current_time, ".tsv"), row.names = FALSE, quote = FALSE, sep = "\t", col.names = TRUE)
-pander(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_time, "/uwm_report_v2_", current_time, ".tsv"))
+write.table(final.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/uwm_report_v2_", current_time, ".tsv"), row.names = FALSE, quote = FALSE, sep = "\t", col.names = TRUE)
+pander(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current_time, "/uwm_report_v2_", current_time, ".tsv"))
 ```
 
 \
@@ -625,7 +641,7 @@ pander(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current_ti
 
 ```{r "Samples to ignore"}
 ## Import samples to ignore
-samples.to.ignore<-suppressWarnings(read.table("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/samples_to_ignore.txt", h=F))
+samples.to.ignore<-suppressWarnings(read.table("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/samples_to_ignore.txt", h=F))
 names(samples.to.ignore)<-"sample_id"
 cat("Sample(s) ignored in this section:")
 cat(paste(samples.to.ignore$sample_id))
