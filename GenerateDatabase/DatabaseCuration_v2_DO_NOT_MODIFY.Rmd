@@ -36,29 +36,29 @@ library(kableExtra)
 ```{r "Import current report"}
 # Define current folder
 current.folder<-dirname(rstudioapi::getSourceEditorContext()$path)
-current.folder<-gsub(".*Curation/","", current.folder)
+current.folder<-gsub(".*CDC_DHS_reports_updated/","", current.folder)
 cat(paste0("Current folder: ", current.folder))
 
 # Import current report
-current.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/uwm_report_v2_", current.folder, ".tsv"), h=T, sep = "\t")
-```
-
-```{r "Report number"}
-# Define new report number
-report.num<-suppressWarnings(read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", previous.folder, "/version.txt"), h=F))[1,1]
-cat(paste0("New report: No. ", report.num+1)) 
+current.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/uwm_report_v2_", current.folder, ".tsv"), h=T, sep = "\t")
 ```
 
 ```{r "Import previous report"}
 # Define previous folder
-previous.folder<-read.table(paste0("~/WS/UWMReformat/Curation/", current.folder, "/previous_folder.txt"), h=F)[1, 1]
+previous.folder<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/previous_folder.txt"), h=F)[1, 1]
 cat(paste0("Previous folder: ", previous.folder))
 
 # Import previous report
-previous.report<-suppressWarnings(read.table(paste0("~/WS/UWMReformat/Curation/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t"))
-previous.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t")
+previous.report<-suppressWarnings(read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t"))
+previous.report<-read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", previous.folder, "/uwm_report_v2_", previous.folder, ".tsv"), h=T, sep = "\t")
 ```
 
+
+```{r "Report number"}
+# Define new report number
+report.num<-suppressWarnings(read.table(paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", previous.folder, "/version.txt"), h=F))[1,1]
+cat(paste0("New report: No. ", report.num+1)) 
+```
 \
 \
 \
@@ -140,8 +140,8 @@ kableExtra::kable(export.report, "html", caption = paste0("Samples released to D
 
 
 ```{r "Export data"}
-write.table(export.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/uwm_report_v2_", current.folder, "_v", stringr::str_pad(report.num + 1, 4, pad = "0"), ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
-write.table(report.num+1, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports/", current.folder, "/version.txt"), row.names = FALSE, quote = FALSE, col.names = FALSE)
+write.table(export.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/uwm_report_v2_", current.folder, "_v", stringr::str_pad(report.num + 1, 4, pad = "0"), ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
+write.table(report.num+1, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/version.txt"), row.names = FALSE, quote = FALSE, col.names = FALSE)
 ```
 
 
