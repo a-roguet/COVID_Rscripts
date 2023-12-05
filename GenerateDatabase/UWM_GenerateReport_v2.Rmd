@@ -1,7 +1,7 @@
 ---
 title: "UWM - CDC/DHS report"
 date: "`r format(Sys.time(), '%a %d %b %Y')`"
-output:                 
+output:                  
   html_document: 
     css: "style.css"        
     code_download: true 
@@ -82,8 +82,8 @@ data.qPCR <- data.qPCR |>
   dplyr::select(Dilution, analytic_comments, Run, Sample_ID, Target, Ct, NeedRerun)
 
 # 3. Sample info are stored in the tab "Sample extraction" in the excel file "SARS-CoV-2_database_BigSpreadsheet.xlsx" in Sandra's OneDrive: https://panthers-my.sharepoint.com/personal/mclellan_uwm_edu/Documents/SARS-CoV-2/.
-sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
-sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/SARS-CoV-2_database_BigSpreadsheet.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
+#sample.info<-read.xlsx("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/SARS-CoV-2_database_BigSpreadsheet2.xlsx", sheet = "Sample extraction", colNames = TRUE, startRow = 3)
 # rename fields sent to DHS/CDC
 # colnames(sample.info)[colnames(sample.info) == "CV"] ="sample_id"
 # colnames(sample.info)[colnames(sample.info) == "CV_Filter_ID"] ="Sample_ID"
@@ -619,8 +619,10 @@ final.report$analytic_comments<-ifelse(final.report$analytic_comments == "NA", N
 
 # Reformat time and date
 #final.report$sample_collect_time2 <- format(strptime(final.report$sample_collect_time, "%I:%M %p"), "%H:%M")
-final.report$sample_collect_date<-format(as.Date(final.report$sample_collect_date), "%m/%d/%Y")
-final.report$test_result_date<-format(as.Date(final.report$test_result_date), "%m/%d/%Y")
+#final.report$sample_collect_date<-format(as.Date(final.report$sample_collect_date), "%m/%d/%Y")
+final.report$sample_collect_date<-format(as.Date(final.report$sample_collect_date), format="%Y-%m-%d")
+#final.report$test_result_date<-format(as.Date(final.report$test_result_date), "%m/%d/%Y")
+final.report$test_result_date<-format(as.Date(final.report$test_result_date), format="%Y-%m-%d")
 
 ```
 
@@ -859,5 +861,7 @@ if(nrow(check.na.mandatory.fields)>0){
   pander("Mandatory fields are missings:")
   pander(check.na.mandatory.fields)
 }
+
+
 
 ```

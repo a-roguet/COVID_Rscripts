@@ -8,6 +8,8 @@ output:
     code_folding: 'hide'
 ---
 
+
+#note - edit .txt file "previous_folder" in working directory to get code to run
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE)
 ```
@@ -140,8 +142,26 @@ kableExtra::kable(export.report, "html", caption = paste0("Samples released to D
 
 
 ```{r "Export data"}
-write.table(export.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/uwm_report_v2_", current.folder, "_v", stringr::str_pad(report.num + 1, 4, pad = "0"), ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
+write.table(export.report, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/WW_uwm_report_v2_", current.folder, "_v", stringr::str_pad(report.num + 1, 4, pad = "0"), ".txt"), row.names = FALSE, quote = FALSE, sep = "|", na = "", col.names = FALSE)
 write.table(report.num+1, paste0("~/OneDrive - UWM/SARS-CoV-2/REPORTS/CDC_DHS_reports_updated/", current.folder, "/version.txt"), row.names = FALSE, quote = FALSE, col.names = FALSE)
 ```
+
+
+
+```{r "Upload Data to Google Drive"}
+#devtools::install_github("tidyverse/googlesheets4", force = TRUE)
+library(googlesheets4)
+
+#if error here - 
+#remove.packages("rlang") 
+#install.packages("rlang") 
+#library(tidyverse)
+
+current.report |>
+  googlesheets4::write_sheet(ss = gs4_get("https://docs.google.com/spreadsheets/d/xxxxxxxx/edit?usp=sharing"), sheet = "data")
+
+
+```
+
 
 
